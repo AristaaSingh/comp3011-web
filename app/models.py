@@ -1,0 +1,17 @@
+from sqlalchemy import Column, Integer, String, Float, Text
+from app.database import Base
+
+class Recipe(Base):
+    __tablename__ = "recipes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, index=True)
+    description = Column(Text, nullable=True)
+    minutes = Column(Integer, nullable=False)
+    ingredients = Column(Text, nullable=False)   # stored as JSON string for now
+    steps = Column(Text, nullable=False)         # stored as JSON string for now
+    calories = Column(Float, nullable=True)
+    protein = Column(Float, nullable=True)
+    fat = Column(Float, nullable=True)
+    carbs = Column(Float, nullable=True)
+    n_ingredients = Column(Integer, nullable=True)
