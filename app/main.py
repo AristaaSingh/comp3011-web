@@ -24,6 +24,7 @@ def recipe_to_response(recipe: models.Recipe) -> schemas.RecipeResponse:
         minutes=recipe.minutes,
         ingredients=json.loads(recipe.ingredients),
         steps=json.loads(recipe.steps),
+        tags=json.loads(recipe.tags) if recipe.tags else [],
         calories=recipe.calories,
         protein=recipe.protein,
         fat=recipe.fat,

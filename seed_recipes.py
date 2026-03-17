@@ -17,6 +17,7 @@ def seed_from_csv(csv_path: str) -> None:
                 try:
                     ingredients = ast.literal_eval(row["ingredients"])
                     steps = ast.literal_eval(row["steps"])
+                    tags = ast.literal_eval(row["tags"])
                     nutrition = ast.literal_eval(row["nutrition"])
                 except (ValueError, SyntaxError) as e:
                     print(f"Skipping row due to parse error: {row.get('name', 'UNKNOWN')} -> {e}")
@@ -38,6 +39,7 @@ def seed_from_csv(csv_path: str) -> None:
                     minutes=int(row["minutes"]),
                     ingredients=json.dumps(ingredients),
                     steps=json.dumps(steps),
+                    tags=json.dumps(tags),
                     calories=calories,
                     protein=protein,
                     fat=fat,

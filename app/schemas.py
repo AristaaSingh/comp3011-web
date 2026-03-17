@@ -7,6 +7,7 @@ class RecipeBase(BaseModel):
     minutes: int = Field(..., gt=0)
     ingredients: List[str]
     steps: List[str]
+    tags: Optional[List[str]] = []
     calories: Optional[float] = None
     protein: Optional[float] = None
     fat: Optional[float] = None
@@ -22,6 +23,7 @@ class RecipeUpdate(BaseModel):
     minutes: Optional[int] = Field(None, gt=0)
     ingredients: Optional[List[str]] = None
     steps: Optional[List[str]] = None
+    tags: Optional[List[str]] = None
     calories: Optional[float] = None
     protein: Optional[float] = None
     fat: Optional[float] = None

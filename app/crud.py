@@ -9,6 +9,7 @@ def create_recipe(db: Session, recipe: schemas.RecipeCreate):
         minutes=recipe.minutes,
         ingredients=json.dumps(recipe.ingredients),
         steps=json.dumps(recipe.steps),
+        tags=json.dumps(recipe.tags or []),
         calories=recipe.calories,
         protein=recipe.protein,
         fat=recipe.fat,
@@ -39,6 +40,9 @@ def update_recipe(db: Session, recipe_id: int, recipe_update: schemas.RecipeUpda
 
     if "steps" in update_data:
         update_data["steps"] = json.dumps(update_data["steps"])
+
+    if "tags" in update_data:
+        update_data["tags"] = json.dumps(update_data["tags"])
 
     for key, value in update_data.items():
         setattr(db_recipe, key, value)
