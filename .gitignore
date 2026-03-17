@@ -10,6 +10,9 @@ __pycache__/
 # SQLite database
 *.db
 
+# CSV Data
+*.csv
+
 # Environment variables
 .env
 
