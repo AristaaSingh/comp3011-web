@@ -35,6 +35,11 @@ body {
   min-height: 100vh;
 }
 
+.landing-page .page-shell {
+  display: flex;
+  flex-direction: column;
+}
+
 .topbar,
 .container {
   max-width: 1120px;
@@ -56,6 +61,12 @@ body {
 .container {
   padding-top: 16px;
   padding-bottom: 56px;
+}
+
+.landing-page .container {
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .topbar h1 {
@@ -131,6 +142,10 @@ body {
   max-width: 640px;
 }
 
+.landing-shell {
+  width: 100%;
+}
+
 .hero-copy h2,
 .section-heading h2,
 .recipes-header h2,
@@ -180,6 +195,18 @@ body {
   max-width: 860px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.landing-search-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.35fr) minmax(180px, 0.8fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.landing-search-actions {
+  justify-content: center;
+  margin-top: 18px;
 }
 
 .subpanel,
@@ -316,7 +343,7 @@ button.secondary {
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .recipes-grid {
@@ -438,5 +465,9 @@ li + li {
   .recipes-header,
   .form-header {
     align-items: flex-start;
+  }
+
+  .landing-search-grid {
+    grid-template-columns: 1fr;
   }
 }
