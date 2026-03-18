@@ -1,5 +1,7 @@
 import json
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal, engine, Base
@@ -35,6 +37,12 @@ def recipe_to_response(recipe: models.Recipe) -> schemas.RecipeResponse:
 @app.get("/")
 def root():
     return {"message": "Recipe Nutrition API is running"}
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.get("/frontend")
+def frontend():
+    return FileResponse("app/static/index.html")
 
 @app.post("/recipes", response_model=schemas.RecipeResponse, status_code=status.HTTP_201_CREATED)
 def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
