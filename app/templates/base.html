@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Recipe Nutrition API{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="page-header">
+      <h1><a href="/" class="site-title">Recipe Nutrition API</a></h1>
+      <p>Manage recipes and estimate ingredient nutrition.</p>
+    </header>
+
+    <nav class="main-nav">
+      <a href="/" class="{% block nav_recipes %}{% endblock %}">Recipes</a>
+      <a href="/recipes/new" class="{% block nav_add %}{% endblock %}">Add Recipe</a>
+      <a href="/nutrition" class="{% block nav_nutrition %}{% endblock %}">Nutrition Tools</a>
+    </nav>
+
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Recipe Details | Recipe Nutrition API{% endblock %}
+{% block nav_recipes %}active{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">Recipe Details</p>
+      <h2 id="recipeDetailTitle">Loading recipe...</h2>
+    </div>
+    <div class="button-row">
+      <a id="editRecipeLink" href="#" class="button-link">Edit</a>
+      <a href="/" class="button-link secondary-link">Back</a>
+    </div>
+  </div>
+
+  <div id="recipeDetailContent">
+    <p class="note">Loading recipe details...</p>
+  </div>
+</section>
+
+<script>
+  window.RECIPE_DETAIL_CONFIG = {
+    recipeId: "{{ recipe_id }}"
+  };
+</script>
+<script type="module" src="/static/js/main.js"></script>
+{% endblock %}

@@ -1,7 +1,8 @@
 import json
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Depends, HTTPException, Request, status
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal, engine, Base
@@ -10,6 +11,7 @@ from app import schemas, crud, models, usda
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Recipe Nutrition API")
+templates = Jinja2Templates(directory="app/templates")
 
 def get_db():
     db = SessionLocal()
@@ -34,25 +36,65 @@ def recipe_to_response(recipe: models.Recipe) -> schemas.RecipeResponse:
         n_ingredients=recipe.n_ingredients
     )
 
-@app.get("/")
-def root():
-    return {"message": "Recipe Nutrition API is running"}
-
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("recipes.html", {"request": request})
+
+@app.get("/recipes-page", response_class=HTMLResponse)
+def recipes_page(request: Request):
+    return templates.TemplateResponse("recipes.html", {"request": request})
+
+@app.get("/recipes/new", response_class=HTMLResponse)
+def new_recipe_page(request: Request):
+    return templates.TemplateResponse(
+        "recipe_form.html",
+        {
+            "request": request,
+            "page_title": "Add Recipe",
+            "recipe_id": None
+        }
+    )
+
+@app.get("/recipes/{recipe_id}/view", response_class=HTMLResponse)
+def recipe_detail_page(recipe_id: int, request: Request):
+    return templates.TemplateResponse(
+        "recipe_detail.html",
+        {
+            "request": request,
+            "recipe_id": recipe_id
+        }
+    )
+
+@app.get("/recipes/{recipe_id}/edit-page", response_class=HTMLResponse)
+def edit_recipe_page(recipe_id: int, request: Request):
+    return templates.TemplateResponse(
+        "recipe_form.html",
+        {
+            "request": request,
+            "page_title": "Edit Recipe",
+            "recipe_id": recipe_id
+        }
+    )
+
+@app.get("/nutrition", response_class=HTMLResponse)
+def nutrition_page(request: Request):
+    return templates.TemplateResponse("nutrition.html", {"request": request})
 
 @app.get("/frontend")
 def frontend():
     return FileResponse("app/static/index.html")
 
-@app.post("/recipes", response_model=schemas.RecipeResponse, status_code=status.HTTP_201_CREATED)
-def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
-    created_recipe = crud.create_recipe(db, recipe)
-    return recipe_to_response(created_recipe)
-
 @app.get("/recipes", response_model=list[schemas.RecipeResponse])
 def read_recipes(db: Session = Depends(get_db)):
     recipes = crud.get_recipes(db)
     return [recipe_to_response(recipe) for recipe in recipes]
+
+@app.post("/recipes", response_model=schemas.RecipeResponse, status_code=status.HTTP_201_CREATED)
+def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
+    created_recipe = crud.create_recipe(db, recipe)
+    return recipe_to_response(created_recipe)
 
 @app.get("/recipes/{recipe_id}", response_model=schemas.RecipeResponse)
 def read_recipe(recipe_id: int, db: Session = Depends(get_db)):

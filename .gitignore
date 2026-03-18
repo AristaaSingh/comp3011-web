@@ -12,6 +12,7 @@ __pycache__/
 
 # CSV Data
 *.csv
+*.numbers
 
 # Environment variables
 .env
@@ -22,4 +23,5 @@ Thumbs.db
 
 # IDE files
 .vscode/
-.idea/
+.idea/*.csv
+RAW_recipes*

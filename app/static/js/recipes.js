@@ -56,8 +56,8 @@ export function renderRecipes(recipes) {
           <p>${escapeHtml(recipe.description || "No description available.")}</p>
           <div class="recipe-tags">${tags}</div>
           <div class="recipe-actions">
-            <button type="button" data-action="view-recipe" data-recipe-id="${recipe.id}">View</button>
-            <button type="button" data-action="edit-recipe" data-recipe-id="${recipe.id}">Edit</button>
+            <a href="/recipes/${recipe.id}/view" class="button-link">View</a>
+            <a href="/recipes/${recipe.id}/edit-page" class="button-link">Edit</a>
             <button type="button" class="secondary" data-action="delete-recipe" data-recipe-id="${recipe.id}">Delete</button>
           </div>
         </article>
@@ -94,7 +94,6 @@ export async function deleteRecipe(recipeId) {
   }
 
   await deleteRecipeRequest(recipeId);
-  document.getElementById("formOutput").textContent = `Recipe ${recipeId} deleted successfully.`;
   await loadRecipes();
 }
 
@@ -110,9 +109,4 @@ export function resetFilters() {
   document.getElementById("tagFilter").value = "";
   document.getElementById("minutesFilter").value = "";
   return loadRecipes();
-}
-
-export async function viewRecipe(recipeId) {
-  const recipe = await fetchRecipeById(recipeId);
-  document.getElementById("formOutput").textContent = JSON.stringify(recipe, null, 2);
 }
