@@ -35,3 +35,24 @@ class RecipeResponse(RecipeBase):
 
     class Config:
         from_attributes = True
+
+class NutritionSearchResult(BaseModel):
+    fdc_id: int
+    description: str
+    data_type: Optional[str] = None
+
+class IngredientEstimateRequest(BaseModel):
+    ingredients: List[str]
+
+class IngredientNutrition(BaseModel):
+    ingredient: str
+    matched_food: Optional[str] = None
+    fdc_id: Optional[int] = None
+    calories: Optional[float] = None
+    protein: Optional[float] = None
+    fat: Optional[float] = None
+    carbs: Optional[float] = None
+
+class NutritionEstimateResponse(BaseModel):
+    ingredients: List[IngredientNutrition]
+    totals: dict

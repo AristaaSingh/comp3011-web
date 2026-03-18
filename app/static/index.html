@@ -21,8 +21,8 @@
         <input type="text" id="tagFilter" placeholder="Filter by tag (e.g. easy)" />
         <input type="number" id="minutesFilter" placeholder="Max minutes" />
         <div class="button-row">
-          <button onclick="loadRecipes()">Search</button>
-          <button type="button" class="secondary" onclick="resetFilters()">Reset</button>
+          <button type="button" id="searchRecipesButton">Search</button>
+          <button type="button" class="secondary" id="resetFiltersButton">Reset</button>
         </div>
       </div>
       <p class="note">Search and filters are only UI-ready for now.</p>
@@ -32,7 +32,7 @@
     <section class="panel">
       <div class="form-header">
         <h2 id="formTitle">Add a Recipe</h2>
-        <button type="button" class="secondary" onclick="resetForm()">Clear Form</button>
+        <button type="button" class="secondary" id="clearFormButton">Clear Form</button>
       </div>
 
       <form id="recipeForm">
@@ -57,7 +57,7 @@
 
         <div class="button-row">
           <button type="submit" id="submitButton">Add Recipe</button>
-          <button type="button" class="secondary" onclick="resetForm()">Cancel Edit</button>
+          <button type="button" class="secondary" id="cancelEditButton">Cancel Edit</button>
         </div>
       </form>
 
@@ -68,12 +68,40 @@
     <section class="panel">
       <div class="recipes-header">
         <h2>All Recipes</h2>
-        <button onclick="loadRecipes()">Refresh</button>
+        <button type="button" id="refreshRecipesButton">Refresh</button>
       </div>
       <div id="recipesGrid" class="recipes-grid"></div>
     </section>
+
+    <section class="panel">
+      <h2>Nutrition Tools</h2>
+
+      <div class="form-header">
+        <h3>Food Search</h3>
+      </div>
+      <div class="search-filter-grid">
+        <input type="text" id="nutritionSearchInput" placeholder="Search foods, e.g. chicken breast" />
+        <div class="button-row">
+          <button type="button" id="nutritionSearchButton">Search Foods</button>
+        </div>
+      </div>
+      <div id="nutritionSearchResults" class="recipes-grid"></div>
+
+      <div class="form-header nutrition-subsection">
+        <h3>Ingredient Estimate</h3>
+      </div>
+      <textarea
+        id="nutritionEstimateIngredients"
+        placeholder="Enter one ingredient per line"
+        rows="6"
+      ></textarea>
+      <div class="button-row">
+        <button type="button" id="nutritionEstimateButton">Estimate Nutrition</button>
+      </div>
+      <pre id="nutritionEstimateResults"></pre>
+    </section>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script type="module" src="/static/main.js"></script>
 </body>
 </html>

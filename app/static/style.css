@@ -111,6 +111,10 @@ button.secondary {
   margin-bottom: 16px;
 }
 
+.nutrition-subsection {
+  margin-top: 24px;
+}
+
 .recipes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -118,6 +122,13 @@ button.secondary {
 }
 
 .recipe-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fcfcff;
+}
+
+.nutrition-result-card {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 16px;

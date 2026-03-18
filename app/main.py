@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal, engine, Base
-from app import schemas, crud, models
+from app import schemas, crud, models, usda
 
 Base.metadata.create_all(bind=engine)
 
@@ -74,3 +74,79 @@ def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
     if not deleted_recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     return
+
+@app.get("/nutrition/search", response_model=list[schemas.NutritionSearchResult])
+async def nutrition_search(query: str):
+    data = await usda.search_foods(query=query, page_size=5)
+
+    foods = data.get("foods", [])
+    results = []
+
+    for food in foods:
+        results.append(
+            schemas.NutritionSearchResult(
+                fdc_id=food.get("fdcId"),
+                description=food.get("description", "Unknown"),
+                data_type=food.get("dataType")
+            )
+        )
+
+    return results
+
+
+@app.post("/nutrition/estimate", response_model=schemas.NutritionEstimateResponse)
+async def estimate_nutrition(payload: schemas.IngredientEstimateRequest):
+    ingredient_results = []
+    total_calories = 0.0
+    total_protein = 0.0
+    total_fat = 0.0
+    total_carbs = 0.0
+
+    for ingredient in payload.ingredients:
+        search_data = await usda.search_foods(query=ingredient, page_size=1)
+        foods = search_data.get("foods", [])
+
+        if not foods:
+            ingredient_results.append(
+                schemas.IngredientNutrition(ingredient=ingredient)
+            )
+            continue
+
+        best_match = foods[0]
+        fdc_id = best_match.get("fdcId")
+        description = best_match.get("description", "Unknown")
+
+        details = await usda.get_food_details(fdc_id)
+        nutrients = usda.extract_key_nutrients(details)
+
+        calories = nutrients["calories"] or 0.0
+        protein = nutrients["protein"] or 0.0
+        fat = nutrients["fat"] or 0.0
+        carbs = nutrients["carbs"] or 0.0
+
+        total_calories += calories
+        total_protein += protein
+        total_fat += fat
+        total_carbs += carbs
+
+        ingredient_results.append(
+            schemas.IngredientNutrition(
+                ingredient=ingredient,
+                matched_food=description,
+                fdc_id=fdc_id,
+                calories=nutrients["calories"],
+                protein=nutrients["protein"],
+                fat=nutrients["fat"],
+                carbs=nutrients["carbs"],
+            )
+        )
+
+    return schemas.NutritionEstimateResponse(
+        ingredients=ingredient_results,
+        totals={
+            "calories": total_calories,
+            "protein": total_protein,
+            "fat": total_fat,
+            "carbs": total_carbs,
+        },
+    )
