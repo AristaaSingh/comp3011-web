@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Recipe Nutrition API{% endblock %}
+{% block nav_recipes %}active{% endblock %}
+
+{% block content %}
+<section class="hero-panel hero-panel-centered">
+  <div class="hero-copy hero-copy-centered">
+    <h2>Search Recipes</h2>
+    <p class="hero-text">Search by name, tag, or cooking time and see matching recipes below.</p>
+  </div>
+</section>
+
+<section class="panel panel-search">
+  <div class="search-filter-grid search-filter-grid-centered">
+    <input type="text" id="searchInput" placeholder="Search by recipe name" />
+    <input type="text" id="tagFilter" placeholder="Filter by tag" />
+    <input type="number" id="minutesFilter" placeholder="Max minutes" />
+    <div class="button-row toolbar-actions">
+      <button type="button" id="searchRecipesButton">Search</button>
+      <button type="button" class="secondary" id="resetFiltersButton">Reset</button>
+    </div>
+  </div>
+
+  <div class="search-page-actions">
+    <a href="/recipes-page" class="button-link secondary-link">View All Recipes</a>
+    <a href="/recipes/new" class="button-link">Add Recipe</a>
+  </div>
+</section>
+
+<script>
+  window.RECIPES_PAGE_CONFIG = {
+    mode: "landing"
+  };
+</script>
+<script type="module" src="/static/js/main.js"></script>
+{% endblock %}

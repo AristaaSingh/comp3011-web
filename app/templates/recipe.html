@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Recipes | Recipe Nutrition API{% endblock %}
+{% block title %}Search & Filter | Recipe Nutrition API{% endblock %}
 {% block nav_recipes %}active{% endblock %}
 
 {% block content %}
 <section class="hero-panel">
   <div class="hero-copy">
     <p class="section-kicker">Recipes</p>
-    <h2>Recipe Library</h2>
-    <p class="hero-text">Browse saved recipes, filter quickly, and move into editing with a clean navigation-first layout.</p>
+    <h2>Search & Filter Recipes</h2>
+    <p class="hero-text">Browse all saved recipes, refine the list further, and open any match for details or editing.</p>
   </div>
   <a href="/recipes/new" class="button-link">Add Recipe</a>
 </section>
@@ -36,7 +36,7 @@
   <div class="recipes-header">
     <div>
       <p class="section-kicker">Recipe List</p>
-      <h2>All Recipes</h2>
+      <h2>Results</h2>
     </div>
     <button type="button" id="refreshRecipesButton">Refresh</button>
   </div>
@@ -44,5 +44,10 @@
   <div id="recipesGrid" class="recipes-grid"></div>
 </section>
 
+<script>
+  window.RECIPES_PAGE_CONFIG = {
+    mode: "all"
+  };
+</script>
 <script type="module" src="/static/js/main.js"></script>
 {% endblock %}

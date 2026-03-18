@@ -31,6 +31,20 @@ export async function loadRecipes() {
   renderRecipes(applyRecipeFilters(recipes));
 }
 
+export function showRecipeEmptyState(message = "Search for recipes to see results here.") {
+  const recipesGrid = document.getElementById("recipesGrid");
+  if (!recipesGrid) {
+    return;
+  }
+
+  if (!message) {
+    recipesGrid.innerHTML = "";
+    return;
+  }
+
+  recipesGrid.innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
+}
+
 export function renderRecipes(recipes) {
   const recipesGrid = document.getElementById("recipesGrid");
 
@@ -108,5 +122,4 @@ export function resetFilters() {
   document.getElementById("searchInput").value = "";
   document.getElementById("tagFilter").value = "";
   document.getElementById("minutesFilter").value = "";
-  return loadRecipes();
 }

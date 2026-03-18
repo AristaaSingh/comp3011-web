@@ -4,7 +4,8 @@ import {
   editRecipe,
   loadRecipes,
   resetFilters,
-  resetForm
+  resetForm,
+  showRecipeEmptyState
 } from "./recipes.js";
 import {
   handleNutritionEstimate,
@@ -30,6 +31,52 @@ function buildRecipePayload() {
     fat: parseOptionalNumber("fat"),
     carbs: parseOptionalNumber("carbs")
   };
+}
+
+function getRecipeSearchParams() {
+  const params = new URLSearchParams();
+  const searchInput = document.getElementById("searchInput");
+  const tagInput = document.getElementById("tagFilter");
+  const minutesInput = document.getElementById("minutesFilter");
+
+  if (searchInput?.value.trim()) {
+    params.set("search", searchInput.value.trim());
+  }
+
+  if (tagInput?.value.trim()) {
+    params.set("tag", tagInput.value.trim());
+  }
+
+  if (minutesInput?.value.trim()) {
+    params.set("minutes", minutesInput.value.trim());
+  }
+
+  return params;
+}
+
+function applyRecipeFiltersFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const searchInput = document.getElementById("searchInput");
+  const tagInput = document.getElementById("tagFilter");
+  const minutesInput = document.getElementById("minutesFilter");
+
+  if (searchInput) {
+    searchInput.value = params.get("search") || "";
+  }
+
+  if (tagInput) {
+    tagInput.value = params.get("tag") || "";
+  }
+
+  if (minutesInput) {
+    minutesInput.value = params.get("minutes") || "";
+  }
+}
+
+function redirectToRecipeResults() {
+  const params = getRecipeSearchParams();
+  const query = params.toString();
+  window.location.href = query ? `/recipes-page?${query}` : "/recipes-page";
 }
 
 function showError(targetId, error) {
@@ -137,7 +184,26 @@ async function initializeRecipeDetailPage() {
 }
 
 function initializeRecipeSection() {
-  if (!document.getElementById("recipesGrid")) {
+  const pageMode = window.RECIPES_PAGE_CONFIG?.mode || "all";
+  const hasRecipeGrid = Boolean(document.getElementById("recipesGrid"));
+  const searchButton = document.getElementById("searchRecipesButton");
+  const resetButton = document.getElementById("resetFiltersButton");
+
+  if (pageMode === "landing") {
+    if (searchButton) {
+      searchButton.addEventListener("click", redirectToRecipeResults);
+    }
+
+    if (resetButton) {
+      resetButton.addEventListener("click", () => {
+        resetFilters();
+      });
+    }
+
+    return;
+  }
+  
+  if (!hasRecipeGrid) {
     return;
   }
 
@@ -154,17 +220,21 @@ function initializeRecipeSection() {
     });
   }
 
-  const searchButton = document.getElementById("searchRecipesButton");
   if (searchButton) {
     searchButton.addEventListener("click", () => {
       loadRecipes().catch((error) => showError("recipesGrid", error));
     });
   }
 
-  const resetButton = document.getElementById("resetFiltersButton");
   if (resetButton) {
     resetButton.addEventListener("click", () => {
-      resetFilters().catch((error) => showError("recipesGrid", error));
+      resetFilters();
+
+      if (pageMode === "all") {
+        loadRecipes().catch((error) => showError("recipesGrid", error));
+      } else {
+        showRecipeEmptyState("");
+      }
     });
   }
 
@@ -245,7 +315,13 @@ function initializeApp() {
   initializeRecipeDetailPage().catch((error) => showError("recipeDetailContent", error));
 
   if (document.getElementById("recipesGrid")) {
-    loadRecipes().catch((error) => showError("recipesGrid", error));
+    applyRecipeFiltersFromUrl();
+
+    if ((window.RECIPES_PAGE_CONFIG?.mode || "all") === "all") {
+      loadRecipes().catch((error) => showError("recipesGrid", error));
+    } else {
+      showRecipeEmptyState("");
+    }
   }
 }
 

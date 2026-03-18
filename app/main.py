@@ -40,7 +40,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("recipes.html", {"request": request})
+    return templates.TemplateResponse("home.html", {"request": request})
 
 @app.get("/recipes-page", response_class=HTMLResponse)
 def recipes_page(request: Request):

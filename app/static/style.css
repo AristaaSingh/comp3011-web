@@ -58,17 +58,8 @@ body {
   padding-bottom: 56px;
 }
 
-.topbar-label {
-  margin: 0;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--primary-strong);
-}
-
 .topbar h1 {
-  margin: 8px 0 6px;
+  margin: 0 0 6px;
   font-size: clamp(2rem, 4vw, 2.8rem);
   line-height: 0.96;
 }
@@ -130,6 +121,16 @@ body {
   margin-bottom: 18px;
 }
 
+.hero-panel-centered {
+  justify-content: center;
+  text-align: center;
+  margin-top: 36px;
+}
+
+.hero-copy-centered {
+  max-width: 640px;
+}
+
 .hero-copy h2,
 .section-heading h2,
 .recipes-header h2,
@@ -175,6 +176,12 @@ body {
   padding-bottom: 20px;
 }
 
+.panel-search {
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .subpanel,
 .recipe-card,
 .nutrition-result-card,
@@ -208,6 +215,10 @@ body {
 .search-filter-grid {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   align-items: end;
+}
+
+.search-filter-grid-centered {
+  justify-content: center;
 }
 
 .form-grid {
@@ -298,6 +309,14 @@ button.secondary {
 
 .toolbar-actions {
   justify-content: flex-end;
+}
+
+.search-page-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
 }
 
 .recipes-grid {
