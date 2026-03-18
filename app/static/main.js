@@ -37,6 +37,14 @@ function showError(targetId, error) {
   target.textContent = error instanceof Error ? error.message : String(error);
 }
 
+function openRecipeFormPanel() {
+  document.getElementById("recipeFormPanel").open = true;
+}
+
+function closeRecipeFormPanel() {
+  document.getElementById("recipeFormPanel").open = false;
+}
+
 async function handleRecipeSubmit(event) {
   event.preventDefault();
 
@@ -50,6 +58,7 @@ async function handleRecipeSubmit(event) {
 
     document.getElementById("formOutput").textContent = JSON.stringify(data, null, 2);
     resetForm();
+    closeRecipeFormPanel();
     await loadRecipes();
   } catch (error) {
     showError("formOutput", error);
@@ -72,6 +81,7 @@ async function handleRecipesGridClick(event) {
 
     if (button.dataset.action === "edit-recipe") {
       await editRecipe(recipeId);
+      openRecipeFormPanel();
       return;
     }
 
@@ -85,6 +95,10 @@ async function handleRecipesGridClick(event) {
 
 function initializeRecipeSection() {
   document.getElementById("recipeForm").addEventListener("submit", handleRecipeSubmit);
+  document.getElementById("openRecipeFormButton").addEventListener("click", () => {
+    resetForm();
+    openRecipeFormPanel();
+  });
   document.getElementById("searchRecipesButton").addEventListener("click", () => {
     loadRecipes().catch((error) => showError("formOutput", error));
   });
@@ -92,7 +106,10 @@ function initializeRecipeSection() {
     resetFilters().catch((error) => showError("formOutput", error));
   });
   document.getElementById("clearFormButton").addEventListener("click", resetForm);
-  document.getElementById("cancelEditButton").addEventListener("click", resetForm);
+  document.getElementById("cancelEditButton").addEventListener("click", () => {
+    resetForm();
+    closeRecipeFormPanel();
+  });
   document.getElementById("refreshRecipesButton").addEventListener("click", () => {
     loadRecipes().catch((error) => showError("formOutput", error));
   });

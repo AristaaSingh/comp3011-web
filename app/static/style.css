@@ -29,6 +29,29 @@ body {
   color: #666;
 }
 
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-kicker {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4f46e5;
+}
+
+.section-heading h2,
+.recipes-header h2,
+.collapsible-summary h2 {
+  margin: 0;
+}
+
 .panel {
   background: white;
   border-radius: 12px;
@@ -37,8 +60,46 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
+.subpanel {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fcfcff;
+}
+
+.collapsible-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.collapsible-summary {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  cursor: pointer;
+}
+
+.collapsible-summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary-action {
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+
+.collapsible-content {
+  padding: 0 20px 20px;
+}
+
 .search-filter-grid,
-.form-grid {
+.form-grid,
+.nutrition-panels,
+.nutrition-totals-grid,
+.nutrition-item-grid {
   display: grid;
   gap: 12px;
 }
@@ -51,6 +112,19 @@ body {
 .form-grid {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   margin-bottom: 12px;
+}
+
+.nutrition-panels {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.nutrition-totals-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  margin-bottom: 16px;
+}
+
+.nutrition-item-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 input,
@@ -111,10 +185,6 @@ button.secondary {
   margin-bottom: 16px;
 }
 
-.nutrition-subsection {
-  margin-top: 24px;
-}
-
 .recipes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -135,7 +205,21 @@ button.secondary {
   background: #fcfcff;
 }
 
+.nutrition-total-card,
+.nutrition-item-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  background: #fcfcff;
+}
+
 .recipe-card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.nutrition-result-card h3,
+.nutrition-item-card h3 {
   margin-top: 0;
   margin-bottom: 8px;
 }
@@ -185,4 +269,8 @@ pre {
   padding: 20px;
   text-align: center;
   color: #666;
+}
+
+.nutrition-estimate-results {
+  margin-top: 16px;
 }

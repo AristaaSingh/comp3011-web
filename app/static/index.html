@@ -10,12 +10,19 @@
   <div class="container">
     <header class="page-header">
       <h1>Recipe Nutrition API</h1>
-      <p>Manage recipes and explore nutrition-friendly meal ideas.</p>
+      <p>Manage recipes and estimate ingredient nutrition.</p>
     </header>
 
-    <!-- Search + Filters -->
     <section class="panel">
-      <h2>Search & Filters</h2>
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Recipes</p>
+          <h2>Recipe Library</h2>
+        </div>
+        <button type="button" id="openRecipeFormButton">Add Recipe</button>
+      </div>
+
+      <h3>Search & Filters</h3>
       <div class="search-filter-grid">
         <input type="text" id="searchInput" placeholder="Search recipes by name..." />
         <input type="text" id="tagFilter" placeholder="Filter by tag (e.g. easy)" />
@@ -28,77 +35,99 @@
       <p class="note">Search and filters are only UI-ready for now.</p>
     </section>
 
-    <!-- Add / Update -->
-    <section class="panel">
-      <div class="form-header">
-        <h2 id="formTitle">Add a Recipe</h2>
-        <button type="button" class="secondary" id="clearFormButton">Clear Form</button>
+    <details class="panel collapsible-panel" id="recipeFormPanel">
+      <summary class="collapsible-summary">
+        <div>
+          <p class="section-kicker">Recipe Form</p>
+          <h2 id="formTitle">Add a Recipe</h2>
+        </div>
+        <span class="summary-action">Open or close</span>
+      </summary>
+
+      <div class="collapsible-content">
+        <div class="form-header">
+          <p class="note">Use this panel to create a new recipe or update an existing one.</p>
+          <button type="button" class="secondary" id="clearFormButton">Clear Form</button>
+        </div>
+
+        <form id="recipeForm">
+          <input type="hidden" id="recipeId" />
+
+          <div class="form-grid">
+            <input type="text" id="name" placeholder="Recipe name" required />
+            <input type="number" id="minutes" placeholder="Minutes" required />
+            <input type="text" id="description" placeholder="Short description" />
+            <input type="text" id="tags" placeholder="Tags (comma-separated)" />
+          </div>
+
+          <textarea id="ingredients" placeholder="Ingredients (comma-separated)" rows="3" required></textarea>
+          <textarea id="steps" placeholder="Steps (comma-separated)" rows="4" required></textarea>
+
+          <div class="form-grid">
+            <input type="number" step="0.1" id="calories" placeholder="Calories" />
+            <input type="number" step="0.1" id="protein" placeholder="Protein" />
+            <input type="number" step="0.1" id="fat" placeholder="Fat" />
+            <input type="number" step="0.1" id="carbs" placeholder="Carbs" />
+          </div>
+
+          <div class="button-row">
+            <button type="submit" id="submitButton">Add Recipe</button>
+            <button type="button" class="secondary" id="cancelEditButton">Cancel Edit</button>
+          </div>
+        </form>
+
+        <pre id="formOutput"></pre>
       </div>
+    </details>
 
-      <form id="recipeForm">
-        <input type="hidden" id="recipeId" />
-
-        <div class="form-grid">
-          <input type="text" id="name" placeholder="Recipe name" required />
-          <input type="number" id="minutes" placeholder="Minutes" required />
-          <input type="text" id="description" placeholder="Short description" />
-          <input type="text" id="tags" placeholder="Tags (comma-separated)" />
-        </div>
-
-        <textarea id="ingredients" placeholder="Ingredients (comma-separated)" rows="3" required></textarea>
-        <textarea id="steps" placeholder="Steps (comma-separated)" rows="4" required></textarea>
-
-        <div class="form-grid">
-          <input type="number" step="0.1" id="calories" placeholder="Calories" />
-          <input type="number" step="0.1" id="protein" placeholder="Protein" />
-          <input type="number" step="0.1" id="fat" placeholder="Fat" />
-          <input type="number" step="0.1" id="carbs" placeholder="Carbs" />
-        </div>
-
-        <div class="button-row">
-          <button type="submit" id="submitButton">Add Recipe</button>
-          <button type="button" class="secondary" id="cancelEditButton">Cancel Edit</button>
-        </div>
-      </form>
-
-      <pre id="formOutput"></pre>
-    </section>
-
-    <!-- Recipes -->
     <section class="panel">
       <div class="recipes-header">
-        <h2>All Recipes</h2>
+        <div>
+          <p class="section-kicker">Recipe List</p>
+          <h2>All Recipes</h2>
+        </div>
         <button type="button" id="refreshRecipesButton">Refresh</button>
       </div>
       <div id="recipesGrid" class="recipes-grid"></div>
     </section>
 
     <section class="panel">
-      <h2>Nutrition Tools</h2>
-
-      <div class="form-header">
-        <h3>Food Search</h3>
-      </div>
-      <div class="search-filter-grid">
-        <input type="text" id="nutritionSearchInput" placeholder="Search foods, e.g. chicken breast" />
-        <div class="button-row">
-          <button type="button" id="nutritionSearchButton">Search Foods</button>
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Nutrition Tools</p>
+          <h2>Ingredient Nutrition</h2>
         </div>
       </div>
-      <div id="nutritionSearchResults" class="recipes-grid"></div>
 
-      <div class="form-header nutrition-subsection">
-        <h3>Ingredient Estimate</h3>
+      <div class="nutrition-panels">
+        <section class="subpanel">
+          <div class="form-header">
+            <h3>USDA Search</h3>
+          </div>
+          <div class="search-filter-grid">
+            <input type="text" id="nutritionSearchInput" placeholder="Search foods, e.g. chicken breast" />
+            <div class="button-row">
+              <button type="button" id="nutritionSearchButton">Search Foods</button>
+            </div>
+          </div>
+          <div id="nutritionSearchResults" class="recipes-grid"></div>
+        </section>
+
+        <section class="subpanel">
+          <div class="form-header">
+            <h3>Nutrition Estimate</h3>
+          </div>
+          <textarea
+            id="nutritionEstimateIngredients"
+            placeholder="Enter one ingredient per line"
+            rows="8"
+          ></textarea>
+          <div class="button-row">
+            <button type="button" id="nutritionEstimateButton">Estimate Nutrition</button>
+          </div>
+          <div id="nutritionEstimateResults" class="nutrition-estimate-results"></div>
+        </section>
       </div>
-      <textarea
-        id="nutritionEstimateIngredients"
-        placeholder="Enter one ingredient per line"
-        rows="6"
-      ></textarea>
-      <div class="button-row">
-        <button type="button" id="nutritionEstimateButton">Estimate Nutrition</button>
-      </div>
-      <pre id="nutritionEstimateResults"></pre>
     </section>
   </div>
 
