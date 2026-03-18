@@ -50,15 +50,17 @@ async def search_foods(query: str, page_size: int = 5):
         )
 
     url = f"{USDA_BASE_URL}/foods/search"
+    headers = {
+        "X-Api-Key": api_key,
+    }
     params = {
-        "api_key": api_key,
         "query": query,
         "pageSize": page_size,
     }
 
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.get(url, params=params)
+            response = await client.get(url, params=params, headers=headers)
             response.raise_for_status()
             return response.json()
     except httpx.HTTPStatusError as e:
@@ -82,11 +84,11 @@ async def get_food_details(fdc_id: int):
         )
 
     url = f"{USDA_BASE_URL}/food/{fdc_id}"
-    params = {"api_key": api_key}
+    headers = {"X-Api-Key": api_key}
 
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.get(url, params=params)
+            response = await client.get(url, headers=headers)
             response.raise_for_status()
             return response.json()
     except httpx.HTTPStatusError as e:
