@@ -2,7 +2,13 @@
 
 The nutrition endpoints expect a `USDA_API_KEY` environment variable.
 
-For local development, create a project-root `.env` file:
+For local development:
+
+- keep `.env` as your real local secret file
+- keep `.env.example` as the committed template
+- the app only reads `.env`, not `.env.example`
+
+Create a project-root `.env` file like this:
 
 ```env
 USDA_API_KEY=your_usda_api_key_here

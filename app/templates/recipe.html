@@ -4,22 +4,29 @@
 {% block nav_recipes %}active{% endblock %}
 
 {% block content %}
-<section class="panel">
+<section class="hero-panel">
+  <div class="hero-copy">
+    <p class="section-kicker">Recipes</p>
+    <h2>Recipe Library</h2>
+    <p class="hero-text">Browse saved recipes, filter quickly, and move into editing with a clean navigation-first layout.</p>
+  </div>
+  <a href="/recipes/new" class="button-link">Add Recipe</a>
+</section>
+
+<section class="panel panel-tight">
   <div class="section-heading">
     <div>
-      <p class="section-kicker">Recipes</p>
-      <h2>Recipe Library</h2>
+      <p class="section-kicker">Filters</p>
+      <h3>Search & Refine</h3>
     </div>
-    <a href="/recipes/new" class="button-link">Add Recipe</a>
   </div>
 
-  <h3>Search & Filters</h3>
   <div class="search-filter-grid">
-    <input type="text" id="searchInput" placeholder="Search recipes by name..." />
-    <input type="text" id="tagFilter" placeholder="Filter by tag (e.g. easy)" />
+    <input type="text" id="searchInput" placeholder="Search by recipe name" />
+    <input type="text" id="tagFilter" placeholder="Filter by tag" />
     <input type="number" id="minutesFilter" placeholder="Max minutes" />
-    <div class="button-row">
-      <button type="button" id="searchRecipesButton">Search</button>
+    <div class="button-row toolbar-actions">
+      <button type="button" id="searchRecipesButton">Apply</button>
       <button type="button" class="secondary" id="resetFiltersButton">Reset</button>
     </div>
   </div>

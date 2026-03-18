@@ -7,19 +7,24 @@
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div class="container">
-    <header class="page-header">
-      <h1><a href="/" class="site-title">Recipe Nutrition API</a></h1>
-      <p>Manage recipes and estimate ingredient nutrition.</p>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <p class="topbar-label">Recipe Workspace</p>
+        <h1><a href="/" class="site-title">Recipe Nutrition API</a></h1>
+        <p class="topbar-copy">Manage recipes and estimate ingredient nutrition.</p>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="/" class="nav-link {% block nav_recipes %}{% endblock %}">Recipes</a>
+        <a href="/recipes/new" class="nav-link {% block nav_add %}{% endblock %}">Add Recipe</a>
+        <a href="/nutrition" class="nav-link {% block nav_nutrition %}{% endblock %}">Nutrition</a>
+      </nav>
     </header>
 
-    <nav class="main-nav">
-      <a href="/" class="{% block nav_recipes %}{% endblock %}">Recipes</a>
-      <a href="/recipes/new" class="{% block nav_add %}{% endblock %}">Add Recipe</a>
-      <a href="/nutrition" class="{% block nav_nutrition %}{% endblock %}">Nutrition Tools</a>
-    </nav>
-
-    {% block content %}{% endblock %}
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
   </div>
 </body>
 </html>

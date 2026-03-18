@@ -4,22 +4,20 @@
 {% block nav_add %}active{% endblock %}
 
 {% block content %}
-<section class="panel">
-  <div class="section-heading">
-    <div>
-      <p class="section-kicker">Recipe Form</p>
-      <h2 id="formTitle">{{ page_title }}</h2>
-    </div>
-  </div>
-
-  <p class="note">
+<section class="hero-panel">
+  <div class="hero-copy">
+    <p class="section-kicker">Recipe Form</p>
+    <h2 id="formTitle">{{ page_title }}</h2>
     {% if recipe_id %}
-      Update the recipe fields below.
+      <p class="hero-text">Update the recipe details below and save the latest version.</p>
     {% else %}
-      Create a new recipe using the form below.
+      <p class="hero-text">Create a new recipe with ingredients, steps, and optional nutrition values.</p>
     {% endif %}
-  </p>
+  </div>
+  <a href="/" class="button-link secondary-link">Back to Recipes</a>
+</section>
 
+<section class="panel">
   <form id="recipeForm">
     <input type="hidden" id="recipeId" value="{{ recipe_id or '' }}" />
 
@@ -44,7 +42,7 @@
       <button type="submit" id="submitButton">
         {% if recipe_id %}Update Recipe{% else %}Add Recipe{% endif %}
       </button>
-      <a href="/" class="button-link secondary-link">Back to Recipes</a>
+      <button type="button" class="secondary" id="clearFormButton">Clear</button>
     </div>
   </form>
 
