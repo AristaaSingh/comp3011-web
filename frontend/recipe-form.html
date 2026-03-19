@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Recipe | Recipe Nutrition API</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <h1><a href="./index.html" class="site-title">Recipe Nutrition API</a></h1>
+        <p class="topbar-copy">Manage recipes and estimate ingredient nutrition.</p>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="./index.html" class="nav-link">Recipes</a>
+        <a href="./recipe-form.html" class="nav-link active">Add Recipe</a>
+        <a href="./nutrition.html" class="nav-link">Nutrition</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <h2 id="formTitle">Add Recipe</h2>
+          <p class="hero-text">Create a new recipe with ingredients, steps, and optional nutrition values.</p>
+        </div>
+        <a href="./results.html" class="button-link secondary-link">Back to Results</a>
+      </section>
+
+      <section class="panel">
+        <form id="recipeForm">
+          <input type="hidden" id="recipeId" value="" />
+
+          <div class="form-grid">
+            <input type="text" id="name" placeholder="Recipe name" required />
+            <input type="number" id="minutes" placeholder="Minutes" required />
+            <input type="text" id="description" placeholder="Short description" />
+            <input type="text" id="tags" placeholder="Tags (comma-separated)" />
+          </div>
+
+          <textarea id="ingredients" placeholder="Ingredients (comma-separated)" rows="3" required></textarea>
+          <textarea id="steps" placeholder="Steps (comma-separated)" rows="4" required></textarea>
+
+          <div class="form-grid">
+            <input type="number" step="0.1" id="calories" placeholder="Calories" />
+            <input type="number" step="0.1" id="protein" placeholder="Protein" />
+            <input type="number" step="0.1" id="fat" placeholder="Fat" />
+            <input type="number" step="0.1" id="carbs" placeholder="Carbs" />
+          </div>
+
+          <div class="button-row">
+            <button type="submit" id="submitButton">Add Recipe</button>
+            <button type="button" class="secondary" id="clearFormButton">Clear</button>
+          </div>
+        </form>
+
+        <pre id="formOutput"></pre>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./assets/js/main.js"></script>
+</body>
+</html>

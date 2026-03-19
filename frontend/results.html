@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search & Filter | Recipe Nutrition API</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <h1><a href="./index.html" class="site-title">Recipe Nutrition API</a></h1>
+        <p class="topbar-copy">Manage recipes and estimate ingredient nutrition.</p>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="./index.html" class="nav-link active">Recipes</a>
+        <a href="./recipe-form.html" class="nav-link">Add Recipe</a>
+        <a href="./nutrition.html" class="nav-link">Nutrition</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <h2>Search & Filter Recipes</h2>
+          <p class="hero-text">Browse all saved recipes, refine the list further, and open any match for details or editing.</p>
+        </div>
+      </section>
+
+      <section class="panel panel-tight">
+        <div class="section-heading">
+          <div>
+            <h3>Search & Refine</h3>
+          </div>
+        </div>
+
+        <div class="search-filter-grid">
+          <input type="text" id="searchInput" placeholder="Search by recipe name" />
+          <input type="text" id="tagFilter" placeholder="Filter by tag" />
+          <input type="number" id="minutesFilter" placeholder="Max minutes" />
+          <div class="button-row toolbar-actions">
+            <button type="button" id="searchRecipesButton">Apply</button>
+            <button type="button" class="secondary" id="resetFiltersButton">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="recipes-header">
+          <div>
+            <h2>Results</h2>
+          </div>
+          <button type="button" id="refreshRecipesButton">Refresh</button>
+        </div>
+
+        <div id="recipesGrid" class="recipes-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    window.RECIPES_PAGE_CONFIG = { mode: "all" };
+  </script>
+  <script type="module" src="./assets/js/main.js"></script>
+</body>
+</html>

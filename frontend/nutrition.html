@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nutrition Tools | Recipe Nutrition API</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <h1><a href="./index.html" class="site-title">Recipe Nutrition API</a></h1>
+        <p class="topbar-copy">Manage recipes and estimate ingredient nutrition.</p>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="./index.html" class="nav-link">Recipes</a>
+        <a href="./recipe-form.html" class="nav-link">Add Recipe</a>
+        <a href="./nutrition.html" class="nav-link active">Nutrition</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <h2>Ingredient Nutrition</h2>
+          <p class="hero-text">Search USDA foods and estimate totals for ingredient lists in a dedicated workspace.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="nutrition-panels">
+          <section class="subpanel">
+            <div class="form-header">
+              <h3>USDA Search</h3>
+            </div>
+
+            <div class="search-filter-grid">
+              <input type="text" id="nutritionSearchInput" placeholder="Search foods, e.g. chicken breast" />
+              <div class="button-row">
+                <button type="button" id="nutritionSearchButton">Search Foods</button>
+              </div>
+            </div>
+
+            <div id="nutritionSearchResults" class="recipes-grid"></div>
+          </section>
+
+          <section class="subpanel">
+            <div class="form-header">
+              <h3>Nutrition Estimate</h3>
+            </div>
+
+            <textarea
+              id="nutritionEstimateIngredients"
+              placeholder="Enter one ingredient per line"
+              rows="8"
+            ></textarea>
+
+            <div class="button-row">
+              <button type="button" id="nutritionEstimateButton">Estimate Nutrition</button>
+            </div>
+
+            <div id="nutritionEstimateResults" class="nutrition-estimate-results"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./assets/js/main.js"></script>
+</body>
+</html>

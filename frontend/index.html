@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | Recipe Nutrition API</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body class="landing-page">
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <h1><a href="./index.html" class="site-title">Recipe Nutrition API</a></h1>
+        <p class="topbar-copy">Manage recipes and estimate ingredient nutrition.</p>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="./index.html" class="nav-link active">Recipes</a>
+        <a href="./recipe-form.html" class="nav-link">Add Recipe</a>
+        <a href="./nutrition.html" class="nav-link">Nutrition</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="landing-shell">
+        <div class="hero-panel hero-panel-centered">
+          <div class="hero-copy hero-copy-centered">
+            <h2>Search Recipes</h2>
+            <p class="hero-text">Search by name, tag, or cooking time, then continue refining on the results page.</p>
+          </div>
+        </div>
+
+        <section class="panel panel-search">
+          <div class="landing-search-grid">
+            <input type="text" id="searchInput" placeholder="Search by recipe name" />
+            <input type="text" id="tagFilter" placeholder="Filter by tag" />
+            <input type="number" id="minutesFilter" placeholder="Max minutes" />
+          </div>
+
+          <div class="button-row landing-search-actions">
+            <button type="button" id="searchRecipesButton">Search</button>
+            <button type="button" class="secondary" id="resetFiltersButton">Reset</button>
+          </div>
+        </section>
+
+        <div class="search-page-actions">
+          <a href="./results.html" class="button-link secondary-link">View All Recipes</a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    window.RECIPES_PAGE_CONFIG = { mode: "landing" };
+  </script>
+  <script type="module" src="./assets/js/main.js"></script>
+</body>
+</html>
