@@ -33,6 +33,11 @@ function buildRecipePayload() {
   };
 }
 
+function getCurrentRecipeId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("recipeId") || params.get("id") || "";
+}
+
 function getRecipeSearchParams() {
   const params = new URLSearchParams();
   const searchInput = document.getElementById("searchInput");
@@ -76,7 +81,7 @@ function applyRecipeFiltersFromUrl() {
 function redirectToRecipeResults() {
   const params = getRecipeSearchParams();
   const query = params.toString();
-  window.location.href = query ? `/recipes-page?${query}` : "/recipes-page";
+  window.location.href = query ? `./results.html?${query}` : "./results.html";
 }
 
 function showError(targetId, error) {
@@ -115,6 +120,11 @@ async function handleRecipeSubmit(event) {
     document.getElementById("formOutput").textContent = JSON.stringify(data, null, 2);
     resetForm();
     closeRecipeFormPanel();
+    if (window.location.pathname.endsWith("recipe-form.html")) {
+      window.location.href = `./recipe-detail.html?id=${data.id}`;
+      return;
+    }
+
     if (document.getElementById("recipesGrid")) {
       await loadRecipes();
     }
@@ -153,7 +163,7 @@ async function initializeRecipeDetailPage() {
   try {
     const recipe = await fetchRecipeById(config.recipeId);
     title.textContent = recipe.name;
-    editLink.href = `/recipes/${recipe.id}/edit-page`;
+    editLink.href = `./recipe-form.html?recipeId=${recipe.id}`;
 
     content.innerHTML = `
       <div class="recipe-meta">
@@ -279,8 +289,9 @@ function initializeRecipeFormPage() {
     cancelButton.addEventListener("click", resetForm);
   }
 
-  if (window.RECIPE_FORM_CONFIG?.recipeId) {
-    editRecipe(window.RECIPE_FORM_CONFIG.recipeId).catch((error) => showError("formOutput", error));
+  const recipeId = getCurrentRecipeId();
+  if (recipeId) {
+    editRecipe(recipeId).catch((error) => showError("formOutput", error));
   }
 }
 
@@ -309,6 +320,11 @@ function initializeNutritionSection() {
 }
 
 function initializeApp() {
+  const detailId = getCurrentRecipeId();
+  if (detailId && document.getElementById("recipeDetailTitle")) {
+    window.RECIPE_DETAIL_CONFIG = { recipeId: detailId };
+  }
+
   initializeRecipeSection();
   initializeRecipeFormPage();
   initializeNutritionSection();

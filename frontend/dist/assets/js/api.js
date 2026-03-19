@@ -1,3 +1,5 @@
+const API_BASE = window.API_BASE || "http://127.0.0.1:8000";
+
 async function parseResponse(response) {
   if (response.status === 204) {
     return null;
@@ -19,12 +21,31 @@ async function parseResponse(response) {
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(path, options);
+  const response = await fetch(`${API_BASE}${path}`, options);
   return parseResponse(response);
 }
 
 export function fetchRecipes() {
   return request("/recipes");
+}
+
+export function searchRecipes(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.query) {
+    params.set("query", filters.query);
+  }
+
+  if (filters.tag) {
+    params.set("tag", filters.tag);
+  }
+
+  if (filters.maxMinutes) {
+    params.set("max_minutes", filters.maxMinutes);
+  }
+
+  const query = params.toString();
+  return request(query ? `/recipes/search?${query}` : "/recipes/search");
 }
 
 export function fetchRecipeById(recipeId) {

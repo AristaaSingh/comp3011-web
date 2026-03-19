@@ -1,8 +1,8 @@
 # Frontend Project
 
-This project is a static site only.
+This project is a static site.
 
-## Run
+## Local Run
 
 ```bash
 cd frontend
@@ -11,7 +11,26 @@ python3 -m http.server 3000
 
 Then open `http://127.0.0.1:3000`.
 
-## Notes
+## Local API Target
 
-- The frontend expects the API at `http://127.0.0.1:8000`.
-- That default is configured in `frontend/assets/js/api.js`.
+The local default API target is defined in `frontend/assets/config.js`:
+
+```js
+window.API_BASE = "http://127.0.0.1:8000";
+```
+
+## Railway Build
+
+For Railway, build the frontend with:
+
+```bash
+python3 build.py
+```
+
+This creates `dist/` and writes `dist/assets/config.js` using the `FRONTEND_API_BASE` environment variable.
+
+Serve the built site with:
+
+```bash
+python3 -m http.server $PORT -d dist
+```
