@@ -65,7 +65,7 @@
 
             <section class="form-step">
               <h3>What ingredients does it use?</h3>
-              <p class="form-step-note">Add a quantity and ingredient name for each item. Ingredient suggestions come from your USDA-backed API search.</p>
+              <p class="form-step-note">Add the ingredient name and its weight in grams. Ingredient suggestions come from your USDA-backed API search.</p>
               <div id="ingredientsList" class="repeatable-list" data-repeatable="ingredient"></div>
               <button type="button" class="secondary add-field-button" data-add-field="ingredient">+ Add ingredient</button>
             </section>
@@ -79,7 +79,8 @@
 
             <section class="form-step">
               <h3>Nutrition estimate</h3>
-              <p class="form-step-note">Calories, protein, fat, and carbs will be estimated automatically from the USDA-backed ingredient data when you save the recipe.</p>
+              <p class="form-step-note">Calories, protein, fat, and carbs update automatically from the USDA-backed ingredient data as you build the recipe.</p>
+              <div id="nutritionEstimateResults" class="nutrition-estimate-results"></div>
             </section>
           </div>
 

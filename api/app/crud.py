@@ -37,8 +37,9 @@ def update_user(db: Session, user: models.User, user_update: schemas.UserUpdate)
     return user
 
 
-def create_recipe(db: Session, recipe: schemas.RecipeCreate):
+def create_recipe(db: Session, recipe: schemas.RecipeCreate, owner_id: int | None = None):
     db_recipe = models.Recipe(
+        owner_id=owner_id,
         name=recipe.name,
         description=recipe.description,
         minutes=recipe.minutes,
@@ -58,6 +59,10 @@ def create_recipe(db: Session, recipe: schemas.RecipeCreate):
 
 def get_recipes(db: Session):
     return db.query(models.Recipe).all()
+
+
+def count_recipes(db: Session):
+    return db.query(models.Recipe).count()
 
 def search_recipes(
     db: Session,

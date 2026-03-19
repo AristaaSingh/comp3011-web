@@ -63,6 +63,7 @@ class RecipeUpdate(BaseModel):
 
 class RecipeResponse(RecipeBase):
     id: int
+    owner_id: Optional[int] = None
 
     class Config:
         from_attributes = True
@@ -74,11 +75,16 @@ class NutritionSearchResult(BaseModel):
     food_category: Optional[str] = None
     brand_owner: Optional[str] = None
 
+class IngredientEstimateItem(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    grams: float = Field(..., gt=0)
+
 class IngredientEstimateRequest(BaseModel):
-    ingredients: List[str]
+    ingredients: List[IngredientEstimateItem]
 
 class IngredientNutrition(BaseModel):
     ingredient: str
+    grams: Optional[float] = None
     matched_food: Optional[str] = None
     fdc_id: Optional[int] = None
     calories: Optional[float] = None

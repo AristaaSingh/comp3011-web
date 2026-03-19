@@ -32,7 +32,7 @@ def create_recipe(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    created_recipe = crud.create_recipe(db, recipe)
+    created_recipe = crud.create_recipe(db, recipe, owner_id=current_user.id)
     return recipe_to_response(created_recipe)
 
 
@@ -51,9 +51,13 @@ def update_recipe(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    updated_recipe = crud.update_recipe(db, recipe_id, recipe_update)
-    if not updated_recipe:
+    recipe = crud.get_recipe(db, recipe_id)
+    if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only edit recipes you created")
+
+    updated_recipe = crud.update_recipe(db, recipe_id, recipe_update)
     return recipe_to_response(updated_recipe)
 
 
@@ -63,7 +67,11 @@ def delete_recipe(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    deleted_recipe = crud.delete_recipe(db, recipe_id)
-    if not deleted_recipe:
+    recipe = crud.get_recipe(db, recipe_id)
+    if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only delete recipes you created")
+
+    deleted_recipe = crud.delete_recipe(db, recipe_id)
     return

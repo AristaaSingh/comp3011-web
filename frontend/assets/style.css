@@ -745,6 +745,46 @@ pre {
   margin-top: 16px;
 }
 
+.nutrition-table-shell {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.nutrition-summary-table,
+.nutrition-estimate-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.nutrition-summary-table th,
+.nutrition-summary-table td,
+.nutrition-estimate-table th,
+.nutrition-estimate-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(227, 174, 196, 0.35);
+  text-align: left;
+  vertical-align: top;
+}
+
+.nutrition-summary-table th,
+.nutrition-estimate-table th {
+  color: var(--heading);
+  font-weight: 700;
+  background: rgba(255, 240, 245, 0.72);
+}
+
+.nutrition-summary-table tbody tr:last-child td,
+.nutrition-estimate-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.nutrition-estimate-results .nutrition-table-shell + .nutrition-table-shell {
+  margin-top: 14px;
+}
+
 ul,
 ol {
   margin: 0;

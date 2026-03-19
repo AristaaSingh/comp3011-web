@@ -1,6 +1,7 @@
 import {
   deleteRecipe as deleteRecipeRequest,
   fetchRecipeById,
+  getAuthSession,
   isAuthenticated,
   searchRecipes
 } from "./api.js";
@@ -35,7 +36,7 @@ export function showRecipeEmptyState(message = "Search for recipes to see result
 
 export function renderRecipes(recipes) {
   const recipesGrid = document.getElementById("recipesGrid");
-  const canManageRecipes = isAuthenticated();
+  const currentUserId = getAuthSession()?.user?.id;
 
   if (!recipes.length) {
     recipesGrid.innerHTML = `<div class="empty-state">No recipes match the current filters.</div>`;
@@ -44,6 +45,7 @@ export function renderRecipes(recipes) {
 
   recipesGrid.innerHTML = recipes
     .map((recipe) => {
+      const canManageRecipe = isAuthenticated() && currentUserId === recipe.owner_id;
       const tags = (recipe.tags || [])
         .map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`)
         .join("");
@@ -60,8 +62,8 @@ export function renderRecipes(recipes) {
           <div class="recipe-tags">${tags}</div>
           <div class="recipe-actions">
             <a href="./recipe-detail.html?id=${recipe.id}" class="button-link">View</a>
-            ${canManageRecipes ? `<a href="./recipe-form.html?recipeId=${recipe.id}" class="button-link">Edit</a>` : ""}
-            ${canManageRecipes ? `<button type="button" class="secondary" data-action="delete-recipe" data-recipe-id="${recipe.id}">Delete</button>` : ""}
+            ${canManageRecipe ? `<a href="./recipe-form.html?recipeId=${recipe.id}" class="button-link">Edit</a>` : ""}
+            ${canManageRecipe ? `<button type="button" class="secondary" data-action="delete-recipe" data-recipe-id="${recipe.id}">Delete</button>` : ""}
           </div>
         </article>
       `;
@@ -71,11 +73,17 @@ export function renderRecipes(recipes) {
 
 export async function editRecipe(recipeId) {
   const recipe = await fetchRecipeById(recipeId);
+  const currentUserId = getAuthSession()?.user?.id;
+
+  if (!currentUserId || recipe.owner_id !== currentUserId) {
+    throw new Error("You can only edit recipes you created.");
+  }
+
   let ingredientSuggestionId = 0;
 
   const splitIngredient = (value) => {
     const text = String(value || "").trim();
-    const match = text.match(/^(\d+(?:[./]\d+)?(?:\s*[a-zA-Z]+)?(?:\s+\d+(?:[./]\d+)?)?)\s+(.+)$/);
+    const match = text.match(/^(\d+(?:\.\d+)?)\s*g\s+(.+)$/i);
     if (!match) {
       return { quantity: "", name: text };
     }
@@ -116,7 +124,7 @@ export async function editRecipe(recipeId) {
             ? (() => {
                 const ingredient = splitIngredient(value);
                 return `<div class="ingredient-item-fields">
-                  <input class="repeatable-quantity-input" type="text" value="${escapeHtml(ingredient.quantity)}" placeholder="e.g. 2 tbsp" />
+                  <input class="repeatable-quantity-input" type="number" value="${escapeHtml(ingredient.quantity)}" placeholder="grams" step="0.1" min="0" />
                   <div class="repeatable-field-shell">
                     <input class="repeatable-input" type="text" value="${escapeHtml(ingredient.name)}" data-suggestions-id="ingredient-suggestions-edit-${ingredientSuggestionId}" />
                     <div id="ingredient-suggestions-edit-${ingredientSuggestionId++}" class="ingredient-suggestions hidden" role="listbox"></div>
@@ -203,9 +211,11 @@ export function resetForm() {
       const datalistId = `ingredient-suggestions-reset-${ingredientSuggestionId++}`;
       const content = document.createElement("div");
 
-      quantity.type = "text";
+      quantity.type = "number";
       quantity.className = "repeatable-quantity-input";
-      quantity.placeholder = "e.g. 2 tbsp";
+      quantity.placeholder = "grams";
+      quantity.step = "0.1";
+      quantity.min = "0";
       content.className = "ingredient-item-fields";
       wrapper.className = "repeatable-field-shell";
       suggestions.id = datalistId;

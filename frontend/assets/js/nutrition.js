@@ -54,7 +54,19 @@ export function renderNutritionSearchResults(results) {
 }
 
 export async function handleNutritionEstimate() {
-  const ingredients = parseLineSeparated("nutritionEstimateIngredients");
+  const ingredients = parseLineSeparated("nutritionEstimateIngredients")
+    .map((line) => {
+      const match = line.match(/^(\d+(?:\.\d+)?)\s*g\s+(.+)$/i);
+      if (!match) {
+        return null;
+      }
+
+      return {
+        grams: Number(match[1]),
+        name: match[2].trim()
+      };
+    })
+    .filter(Boolean);
 
   if (!ingredients.length) {
     renderNutritionEstimateResults(null);
@@ -65,11 +77,18 @@ export async function handleNutritionEstimate() {
   renderNutritionEstimateResults(estimate);
 }
 
-export function renderNutritionEstimateResults(estimate) {
+export function renderNutritionEstimateResults(
+  estimate,
+  emptyMessage = "Enter one ingredient per line to estimate nutrition."
+) {
   const container = document.getElementById("nutritionEstimateResults");
 
+  if (!container) {
+    return;
+  }
+
   if (!estimate) {
-    container.innerHTML = `<div class="empty-state">Enter one ingredient per line to estimate nutrition.</div>`;
+    container.innerHTML = `<div class="empty-state">${escapeHtml(emptyMessage)}</div>`;
     return;
   }
 
@@ -77,32 +96,57 @@ export function renderNutritionEstimateResults(estimate) {
   const items = estimate.ingredients || [];
 
   container.innerHTML = `
-    <div class="nutrition-totals-grid">
-      <article class="nutrition-total-card"><strong>Calories</strong><div>${formatNumber(totals.calories)}</div></article>
-      <article class="nutrition-total-card"><strong>Protein</strong><div>${formatNumber(totals.protein)} g</div></article>
-      <article class="nutrition-total-card"><strong>Fat</strong><div>${formatNumber(totals.fat)} g</div></article>
-      <article class="nutrition-total-card"><strong>Carbs</strong><div>${formatNumber(totals.carbs)} g</div></article>
+    <div class="nutrition-table-shell">
+      <table class="nutrition-summary-table">
+        <thead>
+          <tr>
+            <th>Calories</th>
+            <th>Protein (g)</th>
+            <th>Fat (g)</th>
+            <th>Carbs (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${formatNumber(totals.calories)}</td>
+            <td>${formatNumber(totals.protein)}</td>
+            <td>${formatNumber(totals.fat)}</td>
+            <td>${formatNumber(totals.carbs)}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="nutrition-item-grid">
-      ${items
-        .map(
-          (item) => `
-            <article class="nutrition-item-card">
-              <h3>${escapeHtml(item.ingredient)}</h3>
-              <div class="recipe-meta">
-                <div><strong>Matched food:</strong> ${escapeHtml(item.matched_food || "No USDA match found")}</div>
-                <div><strong>FDC ID:</strong> ${item.fdc_id ?? "N/A"}</div>
-              </div>
-              <div class="recipe-meta">
-                <div><strong>Calories:</strong> ${formatNumber(item.calories)}</div>
-                <div><strong>Protein:</strong> ${formatNumber(item.protein)} g</div>
-                <div><strong>Fat:</strong> ${formatNumber(item.fat)} g</div>
-                <div><strong>Carbs:</strong> ${formatNumber(item.carbs)} g</div>
-              </div>
-            </article>
-          `
-        )
-        .join("")}
+    <div class="nutrition-table-shell">
+      <table class="nutrition-estimate-table">
+        <thead>
+          <tr>
+            <th>Grams</th>
+            <th>Ingredient</th>
+            <th>Matched USDA Food</th>
+            <th>Calories</th>
+            <th>Protein (g)</th>
+            <th>Fat (g)</th>
+            <th>Carbs (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items
+            .map(
+              (item) => `
+                <tr>
+                  <td>${formatNumber(item.grams)}</td>
+                  <td>${escapeHtml(item.ingredient)}</td>
+                  <td>${escapeHtml(item.matched_food || "No USDA match found")}</td>
+                  <td>${formatNumber(item.calories)}</td>
+                  <td>${formatNumber(item.protein)}</td>
+                  <td>${formatNumber(item.fat)}</td>
+                  <td>${formatNumber(item.carbs)}</td>
+                </tr>
+              `
+            )
+            .join("")}
+        </tbody>
+      </table>
     </div>
   `;
 }

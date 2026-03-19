@@ -102,3 +102,18 @@ def extract_key_nutrients(food_details: dict):
             nutrients["carbs"] = amount
 
     return nutrients
+
+
+def get_reference_grams(food_details: dict) -> float:
+    serving_size = food_details.get("servingSize")
+    serving_unit = str(food_details.get("servingSizeUnit", "")).lower()
+
+    if serving_size and serving_unit in {"g", "gm", "grams", "gram"}:
+        try:
+            value = float(serving_size)
+            if value > 0:
+                return value
+        except (TypeError, ValueError):
+            pass
+
+    return 100.0

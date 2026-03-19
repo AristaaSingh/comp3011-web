@@ -102,6 +102,7 @@ const repeatableFieldConfig = {
 };
 let repeatableFieldId = 0;
 const ingredientAutocompleteTimers = new WeakMap();
+let recipeNutritionEstimateTimer = null;
 
 function getRepeatableList(fieldType) {
   const config = repeatableFieldConfig[fieldType];
@@ -147,9 +148,11 @@ function createRepeatableField(fieldType, value = "") {
     const suggestionId = `ingredient-suggestions-${repeatableFieldId++}`;
 
     const quantityInput = document.createElement("input");
-    quantityInput.type = "text";
+    quantityInput.type = "number";
     quantityInput.className = "repeatable-quantity-input";
-    quantityInput.placeholder = "e.g. 2 tbsp";
+    quantityInput.placeholder = "grams";
+    quantityInput.step = "0.1";
+    quantityInput.min = "0";
 
     const ingredientInput = document.createElement("input");
     ingredientInput.type = "text";
@@ -308,13 +311,34 @@ function getRepeatableValues(fieldType) {
         if (!quantity && !ingredient) {
           return "";
         }
-        return [quantity, ingredient].filter(Boolean).join(" ");
+        return quantity && ingredient ? `${quantity} g ${ingredient}` : ingredient;
       })
       .filter(Boolean);
   }
 
   return Array.from(list.querySelectorAll(".repeatable-input"))
     .map((field) => field.value.trim())
+    .filter(Boolean);
+}
+
+function getStructuredIngredientValues() {
+  const list = getRepeatableList("ingredient");
+  if (!list) {
+    return [];
+  }
+
+  return Array.from(list.querySelectorAll(".repeatable-item"))
+    .map((item) => {
+      const gramsValue = item.querySelector(".repeatable-quantity-input")?.value || "";
+      const name = item.querySelector(".repeatable-input")?.value.trim() || "";
+      const grams = Number(gramsValue);
+
+      if (!name || !Number.isFinite(grams) || grams <= 0) {
+        return null;
+      }
+
+      return { name, grams };
+    })
     .filter(Boolean);
 }
 
@@ -339,10 +363,11 @@ function setRepeatableValues(fieldType, values = []) {
 
 async function buildRecipePayload() {
   const ingredients = getRepeatableValues("ingredient");
+  const estimateIngredients = getStructuredIngredientValues();
   let totals = {};
 
-  if (ingredients.length) {
-    const estimate = await estimateRecipeNutrition(ingredients);
+  if (estimateIngredients.length) {
+    const estimate = await estimateRecipeNutrition(estimateIngredients);
     totals = estimate?.totals || {};
   }
 
@@ -358,6 +383,45 @@ async function buildRecipePayload() {
     fat: totals.fat ?? null,
     carbs: totals.carbs ?? null
   };
+}
+
+async function updateRecipeNutritionPreview() {
+  const container = document.getElementById("nutritionEstimateResults");
+  if (!container) {
+    return;
+  }
+
+  const ingredients = getRepeatableValues("ingredient");
+  const estimateIngredients = getStructuredIngredientValues();
+
+  if (!estimateIngredients.length) {
+    renderNutritionEstimateResults(null, "Add ingredients and gram amounts to preview the nutrition estimate.");
+    return;
+  }
+
+  container.innerHTML = `<div class="empty-state">Estimating nutrition from USDA ingredient data...</div>`;
+
+  try {
+    const estimate = await estimateRecipeNutrition(estimateIngredients);
+    renderNutritionEstimateResults(estimate, "Add ingredients and gram amounts to preview the nutrition estimate.");
+  } catch {
+    container.innerHTML = `<div class="empty-state">Could not estimate nutrition right now.</div>`;
+  }
+}
+
+function scheduleRecipeNutritionPreview() {
+  const container = document.getElementById("nutritionEstimateResults");
+  if (!container) {
+    return;
+  }
+
+  if (recipeNutritionEstimateTimer) {
+    window.clearTimeout(recipeNutritionEstimateTimer);
+  }
+
+  recipeNutritionEstimateTimer = window.setTimeout(() => {
+    updateRecipeNutritionPreview().catch(() => {});
+  }, 320);
 }
 
 function getCurrentRecipeId() {
@@ -606,9 +670,10 @@ async function initializeRecipeDetailPage() {
 
   try {
     const recipe = await fetchRecipeById(config.recipeId);
+    const currentUserId = getAuthSession()?.user?.id;
     title.textContent = recipe.name;
     editLink.href = `./recipe-form.html?recipeId=${recipe.id}`;
-    if (!isAuthenticated()) {
+    if (!isAuthenticated() || currentUserId !== recipe.owner_id) {
       editLink.classList.add("hidden");
     }
 
@@ -742,6 +807,9 @@ function initializeRecipeFormPage() {
       }
 
       addRepeatableField(fieldType);
+      if (fieldType === "ingredient") {
+        scheduleRecipeNutritionPreview();
+      }
     });
   }
 
@@ -792,9 +860,17 @@ function initializeRecipeFormPage() {
 
     item.remove();
     ensureRepeatableFieldCount(fieldType);
+    if (fieldType === "ingredient") {
+      scheduleRecipeNutritionPreview();
+    }
   });
 
   recipeForm.addEventListener("input", (event) => {
+    const ingredientField = event.target.closest(".repeatable-input[data-suggestions-id], .repeatable-quantity-input");
+    if (ingredientField) {
+      scheduleRecipeNutritionPreview();
+    }
+
     const field = event.target.closest(".repeatable-input[data-suggestions-id]");
     if (!field) {
       return;
@@ -848,8 +924,15 @@ function initializeRecipeFormPage() {
 
   const recipeId = getCurrentRecipeId();
   if (recipeId) {
-    editRecipe(recipeId).catch((error) => showError("formOutput", error));
+    editRecipe(recipeId)
+      .then(() => {
+        scheduleRecipeNutritionPreview();
+      })
+      .catch((error) => showError("formOutput", error));
   }
+
+  renderNutritionEstimateResults(null, "Add ingredients and gram amounts to preview the nutrition estimate.");
+  scheduleRecipeNutritionPreview();
 }
 
 function initializeAuthPage() {

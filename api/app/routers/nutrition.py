@@ -22,11 +22,13 @@ async def estimate_nutrition(payload: schemas.IngredientEstimateRequest):
     total_carbs = 0.0
 
     for ingredient in payload.ingredients:
-        search_data = await usda.search_foods(query=ingredient, page_size=1)
+        search_data = await usda.search_foods(query=ingredient.name, page_size=1)
         foods = search_data.get("foods", [])
 
         if not foods:
-            ingredient_results.append(schemas.IngredientNutrition(ingredient=ingredient))
+            ingredient_results.append(
+                schemas.IngredientNutrition(ingredient=ingredient.name, grams=ingredient.grams)
+            )
             continue
 
         best_match = foods[0]
@@ -35,11 +37,13 @@ async def estimate_nutrition(payload: schemas.IngredientEstimateRequest):
 
         details = await usda.get_food_details(fdc_id)
         nutrients = usda.extract_key_nutrients(details)
+        reference_grams = usda.get_reference_grams(details)
+        scale = ingredient.grams / reference_grams if reference_grams > 0 else 1.0
 
-        calories = nutrients["calories"] or 0.0
-        protein = nutrients["protein"] or 0.0
-        fat = nutrients["fat"] or 0.0
-        carbs = nutrients["carbs"] or 0.0
+        calories = (nutrients["calories"] or 0.0) * scale
+        protein = (nutrients["protein"] or 0.0) * scale
+        fat = (nutrients["fat"] or 0.0) * scale
+        carbs = (nutrients["carbs"] or 0.0) * scale
 
         total_calories += calories
         total_protein += protein
@@ -48,13 +52,14 @@ async def estimate_nutrition(payload: schemas.IngredientEstimateRequest):
 
         ingredient_results.append(
             schemas.IngredientNutrition(
-                ingredient=ingredient,
+                ingredient=ingredient.name,
+                grams=ingredient.grams,
                 matched_food=description,
                 fdc_id=fdc_id,
-                calories=nutrients["calories"],
-                protein=nutrients["protein"],
-                fat=nutrients["fat"],
-                carbs=nutrients["carbs"],
+                calories=calories,
+                protein=protein,
+                fat=fat,
+                carbs=carbs,
             )
         )
 

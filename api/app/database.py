@@ -27,12 +27,13 @@ Base = declarative_base()
 
 def ensure_schema():
     inspector = inspect(engine)
-    if "users" not in inspector.get_table_names():
-        return
-
-    user_columns = {column["name"] for column in inspector.get_columns("users")}
-    if "display_name" in user_columns:
-        return
-
     with engine.begin() as connection:
-        connection.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR"))
+        if "users" in inspector.get_table_names():
+            user_columns = {column["name"] for column in inspector.get_columns("users")}
+            if "display_name" not in user_columns:
+                connection.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR"))
+
+        if "recipes" in inspector.get_table_names():
+            recipe_columns = {column["name"] for column in inspector.get_columns("recipes")}
+            if "owner_id" not in recipe_columns:
+                connection.execute(text("ALTER TABLE recipes ADD COLUMN owner_id INTEGER"))

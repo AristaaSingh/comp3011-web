@@ -10,6 +10,7 @@ def user_to_response(user: models.User) -> schemas.UserResponse:
 def recipe_to_response(recipe: models.Recipe) -> schemas.RecipeResponse:
     return schemas.RecipeResponse(
         id=recipe.id,
+        owner_id=recipe.owner_id,
         name=recipe.name,
         description=recipe.description,
         minutes=recipe.minutes,
