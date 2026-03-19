@@ -1,6 +1,7 @@
 import {
   deleteRecipe as deleteRecipeRequest,
   fetchRecipeById,
+  isAuthenticated,
   searchRecipes
 } from "./api.js";
 import { escapeHtml } from "./utils.js";
@@ -34,6 +35,7 @@ export function showRecipeEmptyState(message = "Search for recipes to see result
 
 export function renderRecipes(recipes) {
   const recipesGrid = document.getElementById("recipesGrid");
+  const canManageRecipes = isAuthenticated();
 
   if (!recipes.length) {
     recipesGrid.innerHTML = `<div class="empty-state">No recipes match the current filters.</div>`;
@@ -58,8 +60,8 @@ export function renderRecipes(recipes) {
           <div class="recipe-tags">${tags}</div>
           <div class="recipe-actions">
             <a href="./recipe-detail.html?id=${recipe.id}" class="button-link">View</a>
-            <a href="./recipe-form.html?recipeId=${recipe.id}" class="button-link">Edit</a>
-            <button type="button" class="secondary" data-action="delete-recipe" data-recipe-id="${recipe.id}">Delete</button>
+            ${canManageRecipes ? `<a href="./recipe-form.html?recipeId=${recipe.id}" class="button-link">Edit</a>` : ""}
+            ${canManageRecipes ? `<button type="button" class="secondary" data-action="delete-recipe" data-recipe-id="${recipe.id}">Delete</button>` : ""}
           </div>
         </article>
       `;

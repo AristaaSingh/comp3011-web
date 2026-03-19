@@ -1,4 +1,5 @@
 const API_BASE = window.API_BASE || "http://127.0.0.1:8000";
+const AUTH_STORAGE_KEY = "recipe_auth";
 
 async function parseResponse(response) {
   if (response.status === 204) {
@@ -20,9 +21,46 @@ async function parseResponse(response) {
   return payload;
 }
 
+function getStoredAuthPayload() {
+  const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    return null;
+  }
+}
+
+function getAuthHeaders(headers = {}) {
+  const auth = getStoredAuthPayload();
+  if (!auth?.accessToken) {
+    return headers;
+  }
+
+  return {
+    ...headers,
+    Authorization: `Bearer ${auth.accessToken}`
+  };
+}
+
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, options);
-  return parseResponse(response);
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: getAuthHeaders(options.headers || {})
+  });
+
+  try {
+    return await parseResponse(response);
+  } catch (error) {
+    if (response.status === 401) {
+      clearAuthState();
+    }
+    throw error;
+  }
 }
 
 export function fetchRecipes() {
@@ -85,4 +123,46 @@ export function estimateNutrition(ingredients) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ingredients })
   });
+}
+
+export function storeAuthSession(payload) {
+  window.localStorage.setItem(
+    AUTH_STORAGE_KEY,
+    JSON.stringify({
+      accessToken: payload.access_token,
+      user: payload.user
+    })
+  );
+}
+
+export function clearAuthState() {
+  window.localStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+export function getAuthSession() {
+  return getStoredAuthPayload();
+}
+
+export function isAuthenticated() {
+  return Boolean(getStoredAuthPayload()?.accessToken);
+}
+
+export function registerUser(payload) {
+  return request("/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+export function loginUser(payload) {
+  return request("/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+export function fetchCurrentUser() {
+  return request("/auth/me");
 }

@@ -1,4 +1,15 @@
-import { createRecipe, fetchRecipeById, updateRecipe } from "./api.js";
+import {
+  clearAuthState,
+  createRecipe,
+  fetchCurrentUser,
+  fetchRecipeById,
+  getAuthSession,
+  isAuthenticated,
+  loginUser,
+  registerUser,
+  storeAuthSession,
+  updateRecipe
+} from "./api.js";
 import {
   deleteRecipe,
   editRecipe,
@@ -17,6 +28,32 @@ import {
   parseCommaSeparated,
   parseOptionalNumber
 } from "./utils.js";
+
+function updateAuthNavigation() {
+  const authLink = document.querySelector("[data-auth-nav-link]");
+  if (!authLink) {
+    return;
+  }
+
+  authLink.textContent = isAuthenticated() ? "Account" : "Sign In";
+}
+
+function setLockedRecipeFormState(message) {
+  const form = document.getElementById("recipeForm");
+  const output = document.getElementById("formOutput");
+
+  if (!form || !output) {
+    return;
+  }
+
+  for (const field of form.querySelectorAll("input, textarea, button")) {
+    if (field.id !== "clearFormButton") {
+      field.disabled = true;
+    }
+  }
+
+  output.textContent = message;
+}
 
 function buildRecipePayload() {
   return {
@@ -150,6 +187,98 @@ async function handleRecipesGridClick(event) {
   }
 }
 
+function renderAuthStatus(message, isError = false) {
+  const authStatus = document.getElementById("authStatus");
+  if (!authStatus) {
+    return;
+  }
+
+  authStatus.textContent = message;
+  authStatus.classList.remove("hidden", "error", "success");
+  authStatus.classList.add(isError ? "error" : "success");
+}
+
+function renderAuthOutput(message) {
+  const target = document.getElementById("authOutput");
+  if (!target) {
+    return;
+  }
+
+  target.textContent = message;
+}
+
+async function refreshAuthPanel() {
+  const authPanel = document.getElementById("authPanel");
+  const authSummary = document.getElementById("authUserSummary");
+  const session = getAuthSession();
+
+  updateAuthNavigation();
+
+  if (!authPanel || !authSummary) {
+    return;
+  }
+
+  if (!session?.accessToken) {
+    authPanel.classList.add("hidden");
+    authSummary.textContent = "";
+    return;
+  }
+
+  try {
+    const user = await fetchCurrentUser();
+    authPanel.classList.remove("hidden");
+    authSummary.textContent = `Signed in as ${user.email}`;
+    renderAuthStatus("Authenticated successfully.");
+  } catch (error) {
+    clearAuthState();
+    updateAuthNavigation();
+    authPanel.classList.add("hidden");
+    renderAuthStatus(error instanceof Error ? error.message : String(error), true);
+  }
+}
+
+async function handleLoginSubmit(event) {
+  event.preventDefault();
+
+  try {
+    const payload = await loginUser({
+      email: document.getElementById("loginEmail").value.trim(),
+      password: document.getElementById("loginPassword").value
+    });
+    storeAuthSession(payload);
+    document.getElementById("loginForm").reset();
+    renderAuthOutput(JSON.stringify(payload.user, null, 2));
+    await refreshAuthPanel();
+  } catch (error) {
+    renderAuthStatus(error instanceof Error ? error.message : String(error), true);
+  }
+}
+
+async function handleRegisterSubmit(event) {
+  event.preventDefault();
+
+  try {
+    const payload = await registerUser({
+      email: document.getElementById("registerEmail").value.trim(),
+      password: document.getElementById("registerPassword").value
+    });
+    storeAuthSession(payload);
+    document.getElementById("registerForm").reset();
+    renderAuthOutput(JSON.stringify(payload.user, null, 2));
+    await refreshAuthPanel();
+  } catch (error) {
+    renderAuthStatus(error instanceof Error ? error.message : String(error), true);
+  }
+}
+
+function handleLogout() {
+  clearAuthState();
+  updateAuthNavigation();
+  renderAuthStatus("Logged out.");
+  renderAuthOutput("");
+  refreshAuthPanel().catch(() => {});
+}
+
 async function initializeRecipeDetailPage() {
   const config = window.RECIPE_DETAIL_CONFIG;
   const title = document.getElementById("recipeDetailTitle");
@@ -164,6 +293,9 @@ async function initializeRecipeDetailPage() {
     const recipe = await fetchRecipeById(config.recipeId);
     title.textContent = recipe.name;
     editLink.href = `./recipe-form.html?recipeId=${recipe.id}`;
+    if (!isAuthenticated()) {
+      editLink.classList.add("hidden");
+    }
 
     content.innerHTML = `
       <div class="recipe-meta">
@@ -277,6 +409,11 @@ function initializeRecipeFormPage() {
     return;
   }
 
+  if (!isAuthenticated()) {
+    setLockedRecipeFormState("Sign in on the Account page before creating or editing recipes.");
+    return;
+  }
+
   recipeForm.addEventListener("submit", handleRecipeSubmit);
 
   const clearButton = document.getElementById("clearFormButton");
@@ -293,6 +430,28 @@ function initializeRecipeFormPage() {
   if (recipeId) {
     editRecipe(recipeId).catch((error) => showError("formOutput", error));
   }
+}
+
+function initializeAuthPage() {
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+
+  if (!loginForm || !registerForm) {
+    updateAuthNavigation();
+    return;
+  }
+
+  loginForm.addEventListener("submit", handleLoginSubmit);
+  registerForm.addEventListener("submit", handleRegisterSubmit);
+
+  const logoutButton = document.getElementById("logoutButton");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", handleLogout);
+  }
+
+  refreshAuthPanel().catch((error) => {
+    renderAuthStatus(error instanceof Error ? error.message : String(error), true);
+  });
 }
 
 function initializeNutritionSection() {
@@ -320,6 +479,7 @@ function initializeNutritionSection() {
 }
 
 function initializeApp() {
+  updateAuthNavigation();
   const detailId = getCurrentRecipeId();
   if (detailId && document.getElementById("recipeDetailTitle")) {
     window.RECIPE_DETAIL_CONFIG = { recipeId: detailId };
@@ -328,6 +488,7 @@ function initializeApp() {
   initializeRecipeSection();
   initializeRecipeFormPage();
   initializeNutritionSection();
+  initializeAuthPage();
   initializeRecipeDetailPage().catch((error) => showError("recipeDetailContent", error));
 
   if (document.getElementById("recipesGrid")) {
