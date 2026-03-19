@@ -1,42 +1,16 @@
 import os
-from pathlib import Path
 
 import httpx
 from fastapi import HTTPException, status
+from app.env import load_env_file
 
 USDA_BASE_URL = "https://api.nal.usda.gov/fdc/v1"
-ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
-_ENV_FILE_LOADED = False
-
-
-def _load_env_file() -> None:
-    global _ENV_FILE_LOADED
-
-    if _ENV_FILE_LOADED:
-        return
-
-    _ENV_FILE_LOADED = True
-
-    if not ENV_PATH.exists():
-        return
-
-    for raw_line in ENV_PATH.read_text().splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-
-        key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip("\"'")
-
-        if key and key not in os.environ:
-            os.environ[key] = value
 
 
 def _get_usda_api_key() -> str | None:
     # Hosted environments should provide USDA_API_KEY directly.
     # The local .env file is only a development fallback.
-    _load_env_file()
+    load_env_file()
     api_key = os.getenv("USDA_API_KEY", "").strip().strip("\"'")
     return api_key or None
 

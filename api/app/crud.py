@@ -2,6 +2,24 @@ import json
 from sqlalchemy.orm import Session
 from app import models, schemas
 
+
+def create_user(db: Session, email: str, password_hash: str):
+    db_user = models.User(email=email.lower().strip(), password_hash=password_hash)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def get_user(db: Session, user_id: int):
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
+
+def get_user_by_email(db: Session, email: str):
+    normalized_email = email.lower().strip()
+    return db.query(models.User).filter(models.User.email == normalized_email).first()
+
+
 def create_recipe(db: Session, recipe: schemas.RecipeCreate):
     db_recipe = models.Recipe(
         name=recipe.name,

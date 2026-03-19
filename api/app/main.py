@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import SessionLocal, engine, Base
 from app import schemas, crud, models, usda
+from app.security import authenticate_user, create_access_token, get_current_user, hash_password
 
 Base.metadata.create_all(bind=engine)
 
@@ -23,6 +24,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def user_to_response(user: models.User) -> schemas.UserResponse:
+    return schemas.UserResponse(id=user.id, email=user.email)
 
 def recipe_to_response(recipe: models.Recipe) -> schemas.RecipeResponse:
     return schemas.RecipeResponse(
@@ -55,8 +60,37 @@ def search_recipes(
     recipes = crud.search_recipes(db, query=query, tag=tag, max_minutes=max_minutes)
     return [recipe_to_response(recipe) for recipe in recipes]
 
+@app.post("/auth/register", response_model=schemas.TokenResponse, status_code=status.HTTP_201_CREATED)
+def register_user(payload: schemas.UserRegister, db: Session = Depends(get_db)):
+    existing_user = crud.get_user_by_email(db, payload.email)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="An account with this email already exists")
+
+    user = crud.create_user(db, payload.email, hash_password(payload.password))
+    token = create_access_token(subject=user.email, user_id=user.id)
+    return schemas.TokenResponse(access_token=token, user=user_to_response(user))
+
+
+@app.post("/auth/login", response_model=schemas.TokenResponse)
+def login_user(payload: schemas.UserLogin, db: Session = Depends(get_db)):
+    user = authenticate_user(db, payload.email, payload.password)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    token = create_access_token(subject=user.email, user_id=user.id)
+    return schemas.TokenResponse(access_token=token, user=user_to_response(user))
+
+
+@app.get("/auth/me", response_model=schemas.UserResponse)
+def read_current_user(current_user: models.User = Depends(get_current_user)):
+    return user_to_response(current_user)
+
 @app.post("/recipes", response_model=schemas.RecipeResponse, status_code=status.HTTP_201_CREATED)
-def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
+def create_recipe(
+    recipe: schemas.RecipeCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     created_recipe = crud.create_recipe(db, recipe)
     return recipe_to_response(created_recipe)
 
@@ -68,14 +102,23 @@ def read_recipe(recipe_id: int, db: Session = Depends(get_db)):
     return recipe_to_response(recipe)
 
 @app.put("/recipes/{recipe_id}", response_model=schemas.RecipeResponse)
-def update_recipe(recipe_id: int, recipe_update: schemas.RecipeUpdate, db: Session = Depends(get_db)):
+def update_recipe(
+    recipe_id: int,
+    recipe_update: schemas.RecipeUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     updated_recipe = crud.update_recipe(db, recipe_id, recipe_update)
     if not updated_recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     return recipe_to_response(updated_recipe)
 
 @app.delete("/recipes/{recipe_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
+def delete_recipe(
+    recipe_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     deleted_recipe = crud.delete_recipe(db, recipe_id)
     if not deleted_recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
