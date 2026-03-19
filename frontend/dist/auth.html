@@ -23,64 +23,61 @@
     </header>
 
     <main class="container">
-      <section class="hero-panel">
-        <div class="hero-copy">
-          <h2>Account</h2>
-          <p class="hero-text">Register or sign in to create, update, and delete recipes.</p>
-        </div>
-      </section>
 
-      <section class="panel">
-        <div id="authStatus" class="auth-status hidden"></div>
+      <div id="authStatus" class="auth-status hidden"></div>
 
-        <div class="auth-grid">
-          <section class="subpanel">
-            <div class="form-header">
-              <h3>Sign In</h3>
-            </div>
-
-            <form id="loginForm">
-              <div class="form-grid">
-                <input type="email" id="loginEmail" placeholder="Email address" required />
-                <input type="password" id="loginPassword" placeholder="Password" required />
-              </div>
-
-              <div class="button-row">
-                <button type="submit">Sign In</button>
-              </div>
-            </form>
-          </section>
-
-          <section class="subpanel">
-            <div class="form-header">
-              <h3>Create Account</h3>
-            </div>
-
-            <form id="registerForm">
-              <div class="form-grid">
-                <input type="email" id="registerEmail" placeholder="Email address" required />
-                <input type="password" id="registerPassword" placeholder="Password" required />
-              </div>
-
-              <div class="button-row">
-                <button type="submit">Register</button>
-              </div>
-            </form>
-          </section>
+      <section class="auth-card">
+        <div class="auth-tabs" role="tablist" aria-label="Account actions">
+          <button type="button" class="auth-tab active" data-auth-tab="login" aria-pressed="true">Sign In</button>
+          <button type="button" class="auth-tab secondary" data-auth-tab="register" aria-pressed="false">Register</button>
         </div>
 
-        <div id="authPanel" class="subpanel auth-panel hidden">
+        <div id="loginTabPanel" data-auth-panel="login" class="auth-form-shell">
           <div class="form-header">
-            <h3>Signed In</h3>
+            <h3>Sign In</h3>
           </div>
-          <p id="authUserSummary" class="note"></p>
-          <div class="button-row">
-            <button type="button" class="secondary" id="logoutButton">Log Out</button>
-          </div>
+          <p class="hero-text auth-intro">Register or sign in to create, update, and delete recipes.</p>
+
+          <form id="loginForm">
+            <div class="form-grid">
+              <input type="email" id="loginEmail" placeholder="Email address" required />
+              <input type="password" id="loginPassword" placeholder="Password" required />
+            </div>
+
+            <div class="button-row">
+              <button type="submit">Sign In</button>
+            </div>
+          </form>
         </div>
 
-        <pre id="authOutput"></pre>
+        <div id="registerTabPanel" data-auth-panel="register" class="auth-form-shell hidden">
+          <div class="form-header">
+            <h3>Create Account</h3>
+          </div>
+          <p class="hero-text auth-intro">Register or sign in to create, update, and delete recipes.</p>
+
+          <form id="registerForm">
+            <div class="form-grid">
+              <input type="email" id="registerEmail" placeholder="Email address" required />
+              <input type="password" id="registerPassword" placeholder="Password" required />
+            </div>
+
+            <div class="button-row">
+              <button type="submit">Register</button>
+            </div>
+          </form>
+        </div>
       </section>
+
+      <div id="authPanel" class="auth-panel hidden">
+        <div class="form-header">
+          <h3>Signed In</h3>
+        </div>
+        <p id="authUserSummary" class="note"></p>
+        <div class="button-row">
+          <button type="button" class="secondary" id="logoutButton">Log Out</button>
+        </div>
+      </div>
     </main>
   </div>
 

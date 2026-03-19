@@ -41,6 +41,7 @@ function updateAuthNavigation() {
 function setLockedRecipeFormState(message) {
   const form = document.getElementById("recipeForm");
   const output = document.getElementById("formOutput");
+  const notice = document.getElementById("recipeFormNotice");
 
   if (!form || !output) {
     return;
@@ -52,7 +53,33 @@ function setLockedRecipeFormState(message) {
     }
   }
 
-  output.textContent = message;
+  if (notice) {
+    notice.textContent = message;
+    notice.classList.remove("hidden", "success");
+    notice.classList.add("error");
+  }
+
+  output.textContent = "";
+}
+
+function setAuthTab(activeTab) {
+  const tabs = document.querySelectorAll("[data-auth-tab]");
+  const panels = document.querySelectorAll("[data-auth-panel]");
+
+  if (!tabs.length || !panels.length) {
+    return;
+  }
+
+  for (const tab of tabs) {
+    const isActive = tab.dataset.authTab === activeTab;
+    tab.classList.toggle("active", isActive);
+    tab.classList.toggle("secondary", !isActive);
+    tab.setAttribute("aria-pressed", isActive ? "true" : "false");
+  }
+
+  for (const panel of panels) {
+    panel.classList.toggle("hidden", panel.dataset.authPanel !== activeTab);
+  }
 }
 
 function buildRecipePayload() {
@@ -198,33 +225,27 @@ function renderAuthStatus(message, isError = false) {
   authStatus.classList.add(isError ? "error" : "success");
 }
 
-function renderAuthOutput(message) {
-  const target = document.getElementById("authOutput");
-  if (!target) {
-    return;
-  }
-
-  target.textContent = message;
-}
-
 async function refreshAuthPanel() {
+  const authCard = document.querySelector(".auth-card");
   const authPanel = document.getElementById("authPanel");
   const authSummary = document.getElementById("authUserSummary");
   const session = getAuthSession();
 
   updateAuthNavigation();
 
-  if (!authPanel || !authSummary) {
+  if (!authCard || !authPanel || !authSummary) {
     return;
   }
 
   if (!session?.accessToken) {
+    authCard.classList.remove("hidden");
     authPanel.classList.add("hidden");
     authSummary.textContent = "";
     return;
   }
 
   try {
+    authCard.classList.add("hidden");
     const user = await fetchCurrentUser();
     authPanel.classList.remove("hidden");
     authSummary.textContent = `Signed in as ${user.email}`;
@@ -232,6 +253,7 @@ async function refreshAuthPanel() {
   } catch (error) {
     clearAuthState();
     updateAuthNavigation();
+    authCard.classList.remove("hidden");
     authPanel.classList.add("hidden");
     renderAuthStatus(error instanceof Error ? error.message : String(error), true);
   }
@@ -247,7 +269,6 @@ async function handleLoginSubmit(event) {
     });
     storeAuthSession(payload);
     document.getElementById("loginForm").reset();
-    renderAuthOutput(JSON.stringify(payload.user, null, 2));
     await refreshAuthPanel();
   } catch (error) {
     renderAuthStatus(error instanceof Error ? error.message : String(error), true);
@@ -264,7 +285,6 @@ async function handleRegisterSubmit(event) {
     });
     storeAuthSession(payload);
     document.getElementById("registerForm").reset();
-    renderAuthOutput(JSON.stringify(payload.user, null, 2));
     await refreshAuthPanel();
   } catch (error) {
     renderAuthStatus(error instanceof Error ? error.message : String(error), true);
@@ -275,7 +295,6 @@ function handleLogout() {
   clearAuthState();
   updateAuthNavigation();
   renderAuthStatus("Logged out.");
-  renderAuthOutput("");
   refreshAuthPanel().catch(() => {});
 }
 
@@ -444,11 +463,18 @@ function initializeAuthPage() {
   loginForm.addEventListener("submit", handleLoginSubmit);
   registerForm.addEventListener("submit", handleRegisterSubmit);
 
+  for (const tab of document.querySelectorAll("[data-auth-tab]")) {
+    tab.addEventListener("click", () => {
+      setAuthTab(tab.dataset.authTab || "login");
+    });
+  }
+
   const logoutButton = document.getElementById("logoutButton");
   if (logoutButton) {
     logoutButton.addEventListener("click", handleLogout);
   }
 
+  setAuthTab("login");
   refreshAuthPanel().catch((error) => {
     renderAuthStatus(error instanceof Error ? error.message : String(error), true);
   });

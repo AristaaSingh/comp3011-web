@@ -257,11 +257,72 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-.auth-grid {
+.auth-card {
+  max-width: 720px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.auth-tabs {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 247, 251, 0.9);
+}
+
+.auth-tab {
+  width: 100%;
+  min-width: 0;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-soft);
+  border-color: transparent;
+}
+
+.auth-tab:hover {
+  background: rgba(232, 171, 193, 0.18);
+  transform: none;
+}
+
+.auth-tab.active {
+  background: rgba(232, 171, 193, 0.32);
+  color: var(--heading);
+  border-color: transparent;
+}
+
+.auth-form-shell {
+  padding: 34px 36px 30px;
+}
+
+.auth-card .form-header {
+  margin-bottom: 28px;
+}
+
+.auth-card .form-header h3 {
+  font-size: 2rem;
+}
+
+.auth-intro {
+  margin: 0 0 34px;
+  max-width: 520px;
+}
+
+.auth-card .form-grid {
+  margin-bottom: 26px;
+}
+
+.auth-card .button-row {
+  margin-top: 6px;
 }
 
 .nutrition-totals-grid {
@@ -428,6 +489,11 @@ pre {
   border: 1px solid var(--border);
 }
 
+.hero-copy .auth-status {
+  margin-top: 14px;
+  margin-bottom: 0;
+}
+
 .auth-status.success {
   background: rgba(215, 230, 207, 0.4);
   border-color: rgba(144, 169, 130, 0.55);
@@ -439,7 +505,16 @@ pre {
 }
 
 .auth-panel {
-  margin-bottom: 16px;
+  max-width: 720px;
+  margin: 16px auto 0;
+  padding: 24px 28px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.auth-panel .note {
+  margin: 8px 0 24px;
 }
 
 .hidden {
@@ -501,5 +576,9 @@ li + li {
 
   .landing-search-grid {
     grid-template-columns: 1fr;
+  }
+
+  .auth-form-shell {
+    padding: 24px 20px 22px;
   }
 }
