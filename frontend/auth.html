@@ -71,12 +71,21 @@
 
       <div id="authPanel" class="auth-panel hidden">
         <div class="form-header">
-          <h3>Signed In</h3>
+          <h3>Your Account</h3>
         </div>
-        <p id="authUserSummary" class="note"></p>
-        <div class="button-row">
-          <button type="button" class="secondary" id="logoutButton">Log Out</button>
-        </div>
+        <p id="authUserSummary" class="note auth-panel-note"></p>
+
+        <form id="accountForm" class="account-form">
+          <div class="form-grid">
+            <input type="text" id="accountDisplayName" placeholder="Display name" />
+            <input type="email" id="accountEmail" placeholder="Email address" required />
+          </div>
+
+          <div class="button-row">
+            <button type="submit">Save Changes</button>
+            <button type="button" class="secondary" id="logoutButton">Log Out</button>
+          </div>
+        </form>
       </div>
     </main>
   </div>

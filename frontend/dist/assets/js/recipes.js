@@ -71,18 +71,80 @@ export function renderRecipes(recipes) {
 
 export async function editRecipe(recipeId) {
   const recipe = await fetchRecipeById(recipeId);
+  let ingredientSuggestionId = 0;
+
+  const splitIngredient = (value) => {
+    const text = String(value || "").trim();
+    const match = text.match(/^(\d+(?:[./]\d+)?(?:\s*[a-zA-Z]+)?(?:\s+\d+(?:[./]\d+)?)?)\s+(.+)$/);
+    if (!match) {
+      return { quantity: "", name: text };
+    }
+
+    return {
+      quantity: match[1].trim(),
+      name: match[2].trim()
+    };
+  };
+
+  const setRepeatableValues = (listId, values, inputTag = "input") => {
+    const list = document.getElementById(listId);
+    if (!list) {
+      return;
+    }
+
+    const items = (values && values.length ? values : inputTag === "chip" ? [] : [""]).map((value) => {
+      if (inputTag === "chip") {
+        return `
+          <div class="tag-chip" data-value="${escapeHtml(value)}">
+            <span>${escapeHtml(value)}</span>
+            <button type="button" class="tag-chip-remove" data-remove-field="tag" aria-label="Remove tag">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v8h-2v-8zm4 0h2v8h-2v-8zM7 10h2v8H7v-8z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </div>
+        `;
+      }
+
+      const fieldMarkup =
+        inputTag === "textarea"
+          ? `<textarea class="repeatable-input" rows="3" placeholder="Describe one cooking step">${escapeHtml(value)}</textarea>`
+          : listId === "ingredientsList"
+            ? (() => {
+                const ingredient = splitIngredient(value);
+                return `<div class="ingredient-item-fields">
+                  <input class="repeatable-quantity-input" type="text" value="${escapeHtml(ingredient.quantity)}" placeholder="e.g. 2 tbsp" />
+                  <div class="repeatable-field-shell">
+                    <input class="repeatable-input" type="text" value="${escapeHtml(ingredient.name)}" data-suggestions-id="ingredient-suggestions-edit-${ingredientSuggestionId}" />
+                    <div id="ingredient-suggestions-edit-${ingredientSuggestionId++}" class="ingredient-suggestions hidden" role="listbox"></div>
+                  </div>
+                </div>`;
+              })()
+            : `<input class="repeatable-input" type="text" value="${escapeHtml(value)}" />`;
+
+      return `
+        <div class="repeatable-item">
+          ${fieldMarkup}
+          <button type="button" class="secondary remove-field-button" data-remove-field="${escapeHtml(
+            listId === "tagsList" ? "tag" : listId === "ingredientsList" ? "ingredient" : "step"
+          )}">Remove</button>
+        </div>
+      `;
+    });
+
+    list.innerHTML = items.join("");
+  };
 
   document.getElementById("recipeId").value = recipe.id;
   document.getElementById("name").value = recipe.name || "";
   document.getElementById("description").value = recipe.description || "";
   document.getElementById("minutes").value = recipe.minutes || "";
-  document.getElementById("ingredients").value = (recipe.ingredients || []).join(", ");
-  document.getElementById("steps").value = (recipe.steps || []).join(", ");
-  document.getElementById("tags").value = (recipe.tags || []).join(", ");
-  document.getElementById("calories").value = recipe.calories ?? "";
-  document.getElementById("protein").value = recipe.protein ?? "";
-  document.getElementById("fat").value = recipe.fat ?? "";
-  document.getElementById("carbs").value = recipe.carbs ?? "";
+  setRepeatableValues("ingredientsList", recipe.ingredients || [], "input");
+  setRepeatableValues("stepsList", recipe.steps || [], "textarea");
+  setRepeatableValues("tagsList", recipe.tags || [], "chip");
 
   document.getElementById("formTitle").textContent = `Update Recipe #${recipe.id}`;
   document.getElementById("submitButton").textContent = "Update Recipe";
@@ -103,6 +165,63 @@ export async function deleteRecipe(recipeId) {
 export function resetForm() {
   document.getElementById("recipeId").value = "";
   document.getElementById("recipeForm").reset();
+  document.getElementById("tagsList").innerHTML = "";
+  document.getElementById("ingredientsList").innerHTML = "";
+  document.getElementById("stepsList").innerHTML = "";
+  document.getElementById("tagInputField").value = "";
+  let ingredientSuggestionId = 0;
+  for (const listId of ["ingredientsList", "stepsList"]) {
+    const list = document.getElementById(listId);
+    if (!list) {
+      continue;
+    }
+
+    const fieldType =
+      listId === "tagsList" ? "tag" : listId === "ingredientsList" ? "ingredient" : "step";
+    const field = fieldType === "step" ? document.createElement("textarea") : document.createElement("input");
+    const item = document.createElement("div");
+    const removeButton = document.createElement("button");
+
+    item.className = "repeatable-item";
+    field.className = fieldType === "ingredient" ? "repeatable-input" : "repeatable-input";
+    if (fieldType === "step") {
+      field.rows = 3;
+      field.placeholder = "Describe one cooking step";
+    } else {
+      field.type = "text";
+      field.placeholder = fieldType === "tag" ? "e.g. quick dinner" : "Ingredient name";
+    }
+    removeButton.type = "button";
+    removeButton.className = "secondary remove-field-button";
+    removeButton.dataset.removeField = fieldType;
+    removeButton.textContent = "Remove";
+
+    if (fieldType === "ingredient") {
+      const quantity = document.createElement("input");
+      const wrapper = document.createElement("div");
+      const suggestions = document.createElement("div");
+      const datalistId = `ingredient-suggestions-reset-${ingredientSuggestionId++}`;
+      const content = document.createElement("div");
+
+      quantity.type = "text";
+      quantity.className = "repeatable-quantity-input";
+      quantity.placeholder = "e.g. 2 tbsp";
+      content.className = "ingredient-item-fields";
+      wrapper.className = "repeatable-field-shell";
+      suggestions.id = datalistId;
+      suggestions.className = "ingredient-suggestions hidden";
+      suggestions.setAttribute("role", "listbox");
+      field.dataset.suggestionsId = datalistId;
+
+      wrapper.append(field, suggestions);
+      content.append(quantity, wrapper);
+      item.append(content, removeButton);
+    } else {
+      item.append(field, removeButton);
+    }
+
+    list.append(item);
+  }
   document.getElementById("formTitle").textContent = "Add a Recipe";
   document.getElementById("submitButton").textContent = "Add Recipe";
 }

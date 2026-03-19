@@ -23,37 +23,68 @@
     </header>
 
     <main class="container">
-      <section class="hero-panel">
-        <div class="hero-copy">
+      <section class="hero-panel hero-panel-centered">
+        <div class="hero-copy hero-copy-centered">
           <h2 id="formTitle">Add Recipe</h2>
-          <p class="hero-text">Create a new recipe with ingredients, steps, and optional nutrition values.</p>
+          <p class="hero-text">Create a new recipe with ingredients, steps, and USDA-backed nutrition estimates.</p>
           <div id="recipeFormNotice" class="auth-status hidden"></div>
         </div>
-        <a href="./results.html" class="button-link secondary-link">Back to Results</a>
       </section>
 
       <section class="panel">
         <form id="recipeForm">
           <input type="hidden" id="recipeId" value="" />
 
-          <div class="form-grid">
-            <input type="text" id="name" placeholder="Recipe name" required />
-            <input type="number" id="minutes" placeholder="Minutes" required />
-            <input type="text" id="description" placeholder="Short description" />
-            <input type="text" id="tags" placeholder="Tags (comma-separated)" />
-          </div>
+          <div class="recipe-flow">
+            <div class="form-row recipe-title-row">
+              <section class="form-step">
+                <h3>What is this recipe called?</h3>
+                <input type="text" id="name" placeholder="Recipe name" required />
+              </section>
 
-          <textarea id="ingredients" placeholder="Ingredients (comma-separated)" rows="3" required></textarea>
-          <textarea id="steps" placeholder="Steps (comma-separated)" rows="4" required></textarea>
+              <section class="form-step form-step-compact">
+                <h3>How long does it take?</h3>
+                <input type="number" id="minutes" placeholder="Minutes" required />
+              </section>
+            </div>
 
-          <div class="form-grid">
-            <input type="number" step="0.1" id="calories" placeholder="Calories" />
-            <input type="number" step="0.1" id="protein" placeholder="Protein" />
-            <input type="number" step="0.1" id="fat" placeholder="Fat" />
-            <input type="number" step="0.1" id="carbs" placeholder="Carbs" />
+            <section class="form-step">
+              <h3>How would you describe it?</h3>
+              <textarea id="description" placeholder="A short description of the recipe" rows="3"></textarea>
+            </section>
+
+            <section class="form-step">
+              <h3>Which tags should help people find it?</h3>
+              <p class="form-step-note">Add one tag at a time.</p>
+              <div class="tag-composer">
+                <input type="text" id="tagInputField" placeholder="e.g. quick dinner" />
+                <button type="button" class="secondary add-field-button" data-add-field="tag">+ Add tag</button>
+              </div>
+              <div id="tagsList" class="tag-list" data-repeatable="tag"></div>
+            </section>
+
+            <section class="form-step">
+              <h3>What ingredients does it use?</h3>
+              <p class="form-step-note">Add a quantity and ingredient name for each item. Ingredient suggestions come from your USDA-backed API search.</p>
+              <div id="ingredientsList" class="repeatable-list" data-repeatable="ingredient"></div>
+              <button type="button" class="secondary add-field-button" data-add-field="ingredient">+ Add ingredient</button>
+            </section>
+
+            <section class="form-step">
+              <h3>What are the cooking steps?</h3>
+              <p class="form-step-note">Add one step at a time so longer instructions stay clear.</p>
+              <div id="stepsList" class="repeatable-list" data-repeatable="step"></div>
+              <button type="button" class="secondary add-field-button" data-add-field="step">+ Add step</button>
+            </section>
+
+            <section class="form-step">
+              <h3>Nutrition estimate</h3>
+              <p class="form-step-note">Calories, protein, fat, and carbs will be estimated automatically from the USDA-backed ingredient data when you save the recipe.</p>
+            </section>
           </div>
 
           <div class="button-row">
+            <a href="./results.html" class="button-link secondary-link">Back to Results</a>
             <button type="submit" id="submitButton">Add Recipe</button>
             <button type="button" class="secondary" id="clearFormButton">Clear</button>
           </div>

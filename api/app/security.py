@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app import crud, models
-from app.database import SessionLocal
+from app.dependencies import get_db
 from app.env import load_env_file
 
 load_env_file()
@@ -23,14 +23,6 @@ password_context = CryptContext(
     deprecated="auto",
 )
 bearer_scheme = HTTPBearer(auto_error=False)
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 def hash_password(password: str) -> str:

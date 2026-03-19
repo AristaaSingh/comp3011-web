@@ -9,15 +9,21 @@ class UserRegister(BaseModel):
 
 class UserLogin(BaseModel):
     email: str = Field(..., min_length=3, max_length=255)
-    password: str = Field(..., min_length=8, max_length=255)
+    password: str = Field(..., min_length=1, max_length=255)
 
 
 class UserResponse(BaseModel):
     id: int
+    display_name: Optional[str] = None
     email: str
 
     class Config:
         from_attributes = True
+
+
+class UserUpdate(BaseModel):
+    display_name: Optional[str] = Field(None, max_length=255)
+    email: Optional[str] = Field(None, min_length=3, max_length=255)
 
 
 class TokenResponse(BaseModel):
@@ -65,6 +71,8 @@ class NutritionSearchResult(BaseModel):
     fdc_id: int
     description: str
     data_type: Optional[str] = None
+    food_category: Optional[str] = None
+    brand_owner: Optional[str] = None
 
 class IngredientEstimateRequest(BaseModel):
     ingredients: List[str]

@@ -1,5 +1,5 @@
 import { estimateNutrition, searchNutritionFoods } from "./api.js";
-import { escapeHtml, parseLineSeparated } from "./utils.js";
+import { escapeHtml } from "./utils.js";
 
 function formatNumber(value) {
   if (value == null) {
@@ -7,6 +7,14 @@ function formatNumber(value) {
   }
 
   return Number(value).toFixed(1);
+}
+
+function parseLineSeparated(id) {
+  const element = document.getElementById(id);
+  return (element?.value || "")
+    .split("\n")
+    .map((value) => value.trim())
+    .filter(Boolean);
 }
 
 export async function handleNutritionSearch() {

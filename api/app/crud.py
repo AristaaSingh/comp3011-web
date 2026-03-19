@@ -20,6 +20,23 @@ def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == normalized_email).first()
 
 
+def update_user(db: Session, user: models.User, user_update: schemas.UserUpdate):
+    update_data = user_update.model_dump(exclude_unset=True)
+
+    if "email" in update_data and update_data["email"] is not None:
+        update_data["email"] = update_data["email"].lower().strip()
+
+    if "display_name" in update_data and update_data["display_name"] is not None:
+        update_data["display_name"] = update_data["display_name"].strip() or None
+
+    for key, value in update_data.items():
+        setattr(user, key, value)
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 def create_recipe(db: Session, recipe: schemas.RecipeCreate):
     db_recipe = models.Recipe(
         name=recipe.name,

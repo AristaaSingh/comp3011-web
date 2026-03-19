@@ -1,6 +1,36 @@
 const API_BASE = window.API_BASE || "http://127.0.0.1:8000";
 const AUTH_STORAGE_KEY = "recipe_auth";
 
+function normalizeErrorDetail(detail) {
+  if (typeof detail === "string") {
+    return detail;
+  }
+
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+
+        if (item && typeof item === "object") {
+          const location = Array.isArray(item.loc) ? item.loc.slice(1).join(" > ") : "";
+          const message = item.msg || "Invalid input";
+          return location ? `${location}: ${message}` : message;
+        }
+
+        return "Invalid input";
+      })
+      .join(". ");
+  }
+
+  if (detail && typeof detail === "object") {
+    return detail.msg || detail.message || "Request failed";
+  }
+
+  return "Request failed";
+}
+
 async function parseResponse(response) {
   if (response.status === 204) {
     return null;
@@ -11,10 +41,9 @@ async function parseResponse(response) {
   const payload = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    const detail =
-      typeof payload === "string"
-        ? payload
-        : payload?.detail || "Request failed";
+    const detail = typeof payload === "string"
+      ? payload
+      : normalizeErrorDetail(payload?.detail);
     throw new Error(detail);
   }
 
@@ -117,6 +146,11 @@ export function searchNutritionFoods(query) {
   return request(`/nutrition/search?${params.toString()}`);
 }
 
+export function searchIngredientOptions(query) {
+  const params = new URLSearchParams({ query });
+  return request(`/ingredients/search?${params.toString()}`);
+}
+
 export function estimateNutrition(ingredients) {
   return request("/nutrition/estimate", {
     method: "POST",
@@ -164,5 +198,13 @@ export function loginUser(payload) {
 }
 
 export function fetchCurrentUser() {
-  return request("/auth/me");
+  return request("/users/me");
+}
+
+export function updateCurrentUser(payload) {
+  return request("/users/me", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 }

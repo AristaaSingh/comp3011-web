@@ -1,13 +1,16 @@
 import {
   clearAuthState,
   createRecipe,
+  estimateNutrition as estimateRecipeNutrition,
   fetchCurrentUser,
   fetchRecipeById,
   getAuthSession,
   isAuthenticated,
   loginUser,
   registerUser,
+  searchIngredientOptions,
   storeAuthSession,
+  updateCurrentUser,
   updateRecipe
 } from "./api.js";
 import {
@@ -25,8 +28,6 @@ import {
 } from "./nutrition.js";
 import {
   escapeHtml,
-  parseCommaSeparated,
-  parseOptionalNumber
 } from "./utils.js";
 
 function updateAuthNavigation() {
@@ -82,18 +83,280 @@ function setAuthTab(activeTab) {
   }
 }
 
-function buildRecipePayload() {
+const repeatableFieldConfig = {
+  tag: {
+    listId: "tagsList",
+    placeholder: "e.g. quick dinner",
+    inputTag: "chip"
+  },
+  ingredient: {
+    listId: "ingredientsList",
+    placeholder: "Ingredient name",
+    inputTag: "ingredient"
+  },
+  step: {
+    listId: "stepsList",
+    placeholder: "Describe one cooking step",
+    inputTag: "textarea"
+  }
+};
+let repeatableFieldId = 0;
+const ingredientAutocompleteTimers = new WeakMap();
+
+function getRepeatableList(fieldType) {
+  const config = repeatableFieldConfig[fieldType];
+  return config ? document.getElementById(config.listId) : null;
+}
+
+function createRepeatableField(fieldType, value = "") {
+  const config = repeatableFieldConfig[fieldType];
+  if (!config) {
+    return null;
+  }
+
+  if (config.inputTag === "chip") {
+    const chip = document.createElement("div");
+    chip.className = "tag-chip";
+    chip.dataset.value = value;
+
+    const text = document.createElement("span");
+    text.textContent = value;
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "tag-chip-remove";
+    removeButton.dataset.removeField = fieldType;
+    removeButton.setAttribute("aria-label", `Remove ${fieldType}`);
+    removeButton.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v8h-2v-8zm4 0h2v8h-2v-8zM7 10h2v8H7v-8z"
+          fill="currentColor"
+        />
+      </svg>
+    `;
+
+    chip.append(text, removeButton);
+    return chip;
+  }
+
+  const row = document.createElement("div");
+  row.className = "repeatable-item";
+
+  if (config.inputTag === "ingredient") {
+    const suggestionId = `ingredient-suggestions-${repeatableFieldId++}`;
+
+    const quantityInput = document.createElement("input");
+    quantityInput.type = "text";
+    quantityInput.className = "repeatable-quantity-input";
+    quantityInput.placeholder = "e.g. 2 tbsp";
+
+    const ingredientInput = document.createElement("input");
+    ingredientInput.type = "text";
+    ingredientInput.className = "repeatable-input";
+    ingredientInput.placeholder = config.placeholder;
+    ingredientInput.value = value;
+    ingredientInput.dataset.suggestionsId = suggestionId;
+
+    const ingredientShell = document.createElement("div");
+    ingredientShell.className = "repeatable-field-shell";
+
+    const suggestions = document.createElement("div");
+    suggestions.id = suggestionId;
+    suggestions.className = "ingredient-suggestions hidden";
+    suggestions.setAttribute("role", "listbox");
+
+    ingredientShell.append(ingredientInput, suggestions);
+
+    const content = document.createElement("div");
+    content.className = "ingredient-item-fields";
+    content.append(quantityInput, ingredientShell);
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "secondary remove-field-button";
+    removeButton.dataset.removeField = fieldType;
+    removeButton.textContent = "Remove";
+
+    row.append(content, removeButton);
+    return row;
+  }
+
+  const field =
+    config.inputTag === "textarea"
+      ? document.createElement("textarea")
+      : document.createElement("input");
+
+  if (config.inputTag === "input") {
+    field.type = "text";
+  } else {
+    field.rows = 3;
+  }
+
+  field.className = "repeatable-input";
+  field.placeholder = config.placeholder;
+  field.value = value;
+
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.className = "secondary remove-field-button";
+  removeButton.dataset.removeField = fieldType;
+  removeButton.textContent = "Remove";
+
+  row.append(field, removeButton);
+  return row;
+}
+
+async function populateIngredientSuggestions(field) {
+  const query = field.value.trim();
+  const suggestionsId = field.dataset.suggestionsId;
+  if (!suggestionsId) {
+    return;
+  }
+
+  const suggestions = document.getElementById(suggestionsId);
+  if (!suggestions) {
+    return;
+  }
+
+  if (query.length < 2) {
+    suggestions.innerHTML = "";
+    suggestions.classList.add("hidden");
+    return;
+  }
+
+  try {
+    const results = await searchIngredientOptions(query);
+    const items = (results || [])
+      .slice(0, 5)
+      .map((result) => {
+        const meta = [result.data_type, result.food_category || result.brand_owner, result.fdc_id ? `FDC ${result.fdc_id}` : ""]
+          .filter(Boolean)
+          .join(" • ");
+
+        return `
+          <button
+            type="button"
+            class="ingredient-suggestion-item"
+            data-suggestion-value="${escapeHtml(result.description)}"
+          >
+            <span class="ingredient-suggestion-title">${escapeHtml(result.description)}</span>
+            ${meta ? `<span class="ingredient-suggestion-meta">${escapeHtml(meta)}</span>` : ""}
+          </button>
+        `;
+      })
+      .join("");
+
+    suggestions.innerHTML = items;
+    suggestions.classList.toggle("hidden", !items);
+  } catch {
+    suggestions.innerHTML = "";
+    suggestions.classList.add("hidden");
+  }
+}
+
+function ensureRepeatableFieldCount(fieldType) {
+  const list = getRepeatableList(fieldType);
+  if (!list || list.children.length || fieldType === "tag") {
+    return;
+  }
+  const row = createRepeatableField(fieldType);
+  if (row) {
+    list.append(row);
+  }
+}
+
+function addRepeatableField(fieldType, value = "") {
+  const list = getRepeatableList(fieldType);
+  if (!list) {
+    return;
+  }
+  if (fieldType === "tag") {
+    const normalized = value.trim();
+    if (!normalized) {
+      return;
+    }
+
+    const existingValues = new Set(getRepeatableValues("tag").map((item) => item.toLowerCase()));
+    if (existingValues.has(normalized.toLowerCase())) {
+      return;
+    }
+  }
+  const row = createRepeatableField(fieldType, value);
+  if (row) {
+    list.append(row);
+  }
+}
+
+function getRepeatableValues(fieldType) {
+  const list = getRepeatableList(fieldType);
+  if (!list) {
+    return [];
+  }
+
+  if (fieldType === "tag") {
+    return Array.from(list.querySelectorAll(".tag-chip"))
+      .map((chip) => chip.dataset.value?.trim() || "")
+      .filter(Boolean);
+  }
+
+  if (fieldType === "ingredient") {
+    return Array.from(list.querySelectorAll(".repeatable-item"))
+      .map((item) => {
+        const quantity = item.querySelector(".repeatable-quantity-input")?.value.trim() || "";
+        const ingredient = item.querySelector(".repeatable-input")?.value.trim() || "";
+        if (!quantity && !ingredient) {
+          return "";
+        }
+        return [quantity, ingredient].filter(Boolean).join(" ");
+      })
+      .filter(Boolean);
+  }
+
+  return Array.from(list.querySelectorAll(".repeatable-input"))
+    .map((field) => field.value.trim())
+    .filter(Boolean);
+}
+
+function setRepeatableValues(fieldType, values = []) {
+  const list = getRepeatableList(fieldType);
+  if (!list) {
+    return;
+  }
+
+  list.innerHTML = "";
+
+  const sanitizedValues = values.filter((value) => String(value).trim());
+  if (!sanitizedValues.length) {
+    ensureRepeatableFieldCount(fieldType);
+    return;
+  }
+
+  for (const value of sanitizedValues) {
+    addRepeatableField(fieldType, value);
+  }
+}
+
+async function buildRecipePayload() {
+  const ingredients = getRepeatableValues("ingredient");
+  let totals = {};
+
+  if (ingredients.length) {
+    const estimate = await estimateRecipeNutrition(ingredients);
+    totals = estimate?.totals || {};
+  }
+
   return {
     name: document.getElementById("name").value.trim(),
     description: document.getElementById("description").value.trim() || null,
     minutes: Number(document.getElementById("minutes").value),
-    ingredients: parseCommaSeparated("ingredients"),
-    steps: parseCommaSeparated("steps"),
-    tags: parseCommaSeparated("tags"),
-    calories: parseOptionalNumber("calories"),
-    protein: parseOptionalNumber("protein"),
-    fat: parseOptionalNumber("fat"),
-    carbs: parseOptionalNumber("carbs")
+    ingredients,
+    steps: getRepeatableValues("step"),
+    tags: getRepeatableValues("tag"),
+    calories: totals.calories ?? null,
+    protein: totals.protein ?? null,
+    fat: totals.fat ?? null,
+    carbs: totals.carbs ?? null
   };
 }
 
@@ -174,9 +437,10 @@ async function handleRecipeSubmit(event) {
   event.preventDefault();
 
   const recipeId = document.getElementById("recipeId").value;
-  const payload = buildRecipePayload();
 
   try {
+    document.getElementById("formOutput").textContent = "Estimating nutrition from USDA ingredient data...";
+    const payload = await buildRecipePayload();
     const data = recipeId
       ? await updateRecipe(recipeId, payload)
       : await createRecipe(payload);
@@ -229,11 +493,13 @@ async function refreshAuthPanel() {
   const authCard = document.querySelector(".auth-card");
   const authPanel = document.getElementById("authPanel");
   const authSummary = document.getElementById("authUserSummary");
+  const accountDisplayName = document.getElementById("accountDisplayName");
+  const accountEmail = document.getElementById("accountEmail");
   const session = getAuthSession();
 
   updateAuthNavigation();
 
-  if (!authCard || !authPanel || !authSummary) {
+  if (!authCard || !authPanel || !authSummary || !accountDisplayName || !accountEmail) {
     return;
   }
 
@@ -241,6 +507,8 @@ async function refreshAuthPanel() {
     authCard.classList.remove("hidden");
     authPanel.classList.add("hidden");
     authSummary.textContent = "";
+    accountDisplayName.value = "";
+    accountEmail.value = "";
     return;
   }
 
@@ -248,7 +516,13 @@ async function refreshAuthPanel() {
     authCard.classList.add("hidden");
     const user = await fetchCurrentUser();
     authPanel.classList.remove("hidden");
-    authSummary.textContent = `Signed in as ${user.email}`;
+    authSummary.textContent = `Signed in as ${user.display_name || user.email}`;
+    accountDisplayName.value = user.display_name || "";
+    accountEmail.value = user.email || "";
+    storeAuthSession({
+      access_token: session.accessToken,
+      user
+    });
     renderAuthStatus("Authenticated successfully.");
   } catch (error) {
     clearAuthState();
@@ -286,6 +560,28 @@ async function handleRegisterSubmit(event) {
     storeAuthSession(payload);
     document.getElementById("registerForm").reset();
     await refreshAuthPanel();
+  } catch (error) {
+    renderAuthStatus(error instanceof Error ? error.message : String(error), true);
+  }
+}
+
+async function handleAccountSubmit(event) {
+  event.preventDefault();
+
+  try {
+    const user = await updateCurrentUser({
+      display_name: document.getElementById("accountDisplayName").value.trim() || null,
+      email: document.getElementById("accountEmail").value.trim()
+    });
+    const session = getAuthSession();
+    if (session?.accessToken) {
+      storeAuthSession({
+        access_token: session.accessToken,
+        user
+      });
+    }
+    await refreshAuthPanel();
+    renderAuthStatus("Account updated successfully.");
   } catch (error) {
     renderAuthStatus(error instanceof Error ? error.message : String(error), true);
   }
@@ -428,6 +724,111 @@ function initializeRecipeFormPage() {
     return;
   }
 
+  ensureRepeatableFieldCount("tag");
+  ensureRepeatableFieldCount("ingredient");
+  ensureRepeatableFieldCount("step");
+
+  for (const button of document.querySelectorAll("[data-add-field]")) {
+    button.addEventListener("click", () => {
+      const fieldType = button.dataset.addField || "";
+      if (fieldType === "tag") {
+        const input = document.getElementById("tagInputField");
+        if (!input) {
+          return;
+        }
+        addRepeatableField("tag", input.value);
+        input.value = "";
+        return;
+      }
+
+      addRepeatableField(fieldType);
+    });
+  }
+
+  const tagInput = document.getElementById("tagInputField");
+  if (tagInput) {
+    tagInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+
+      event.preventDefault();
+      addRepeatableField("tag", tagInput.value);
+      tagInput.value = "";
+    });
+  }
+
+  recipeForm.addEventListener("click", (event) => {
+    const suggestionButton = event.target.closest("[data-suggestion-value]");
+    if (suggestionButton) {
+      const wrapper = suggestionButton.closest(".repeatable-field-shell");
+      const field = wrapper?.querySelector(".repeatable-input");
+      const suggestions = wrapper?.querySelector(".ingredient-suggestions");
+
+      if (field) {
+        field.value = suggestionButton.dataset.suggestionValue || "";
+      }
+
+      if (suggestions) {
+        suggestions.innerHTML = "";
+        suggestions.classList.add("hidden");
+      }
+
+      return;
+    }
+
+    const removeButton = event.target.closest("[data-remove-field]");
+    if (!removeButton) {
+      return;
+    }
+
+    const fieldType = removeButton.dataset.removeField || "";
+    const list = getRepeatableList(fieldType);
+    const item = removeButton.closest(".repeatable-item, .tag-chip");
+
+    if (!list || !item) {
+      return;
+    }
+
+    item.remove();
+    ensureRepeatableFieldCount(fieldType);
+  });
+
+  recipeForm.addEventListener("input", (event) => {
+    const field = event.target.closest(".repeatable-input[data-suggestions-id]");
+    if (!field) {
+      return;
+    }
+
+    const existingTimer = ingredientAutocompleteTimers.get(field);
+    if (existingTimer) {
+      window.clearTimeout(existingTimer);
+    }
+
+    const timerId = window.setTimeout(() => {
+      populateIngredientSuggestions(field).catch(() => {});
+    }, 220);
+
+    ingredientAutocompleteTimers.set(field, timerId);
+  });
+
+  recipeForm.addEventListener("focusout", (event) => {
+    const field = event.target.closest(".repeatable-input[data-suggestions-id]");
+    if (!field) {
+      return;
+    }
+
+    const wrapper = field.closest(".repeatable-field-shell");
+    const suggestions = wrapper?.querySelector(".ingredient-suggestions");
+    if (!suggestions) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      suggestions.classList.add("hidden");
+    }, 120);
+  });
+
   if (!isAuthenticated()) {
     setLockedRecipeFormState("Sign in on the Account page before creating or editing recipes.");
     return;
@@ -472,6 +873,11 @@ function initializeAuthPage() {
   const logoutButton = document.getElementById("logoutButton");
   if (logoutButton) {
     logoutButton.addEventListener("click", handleLogout);
+  }
+
+  const accountForm = document.getElementById("accountForm");
+  if (accountForm) {
+    accountForm.addEventListener("submit", handleAccountSubmit);
   }
 
   setAuthTab("login");
