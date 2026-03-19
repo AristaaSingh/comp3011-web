@@ -29,6 +29,25 @@ export function fetchRecipes() {
   return request("/recipes");
 }
 
+export function searchRecipes(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.query) {
+    params.set("query", filters.query);
+  }
+
+  if (filters.tag) {
+    params.set("tag", filters.tag);
+  }
+
+  if (filters.maxMinutes) {
+    params.set("max_minutes", filters.maxMinutes);
+  }
+
+  const query = params.toString();
+  return request(query ? `/recipes/search?${query}` : "/recipes/search");
+}
+
 export function fetchRecipeById(recipeId) {
   return request(`/recipes/${recipeId}`);
 }

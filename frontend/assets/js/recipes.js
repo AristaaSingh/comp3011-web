@@ -1,34 +1,21 @@
 import {
   deleteRecipe as deleteRecipeRequest,
   fetchRecipeById,
-  fetchRecipes
+  searchRecipes
 } from "./api.js";
 import { escapeHtml } from "./utils.js";
 
 function getRecipeFilters() {
   return {
-    searchTerm: document.getElementById("searchInput").value.trim().toLowerCase(),
-    tagFilter: document.getElementById("tagFilter").value.trim().toLowerCase(),
+    query: document.getElementById("searchInput").value.trim(),
+    tag: document.getElementById("tagFilter").value.trim(),
     maxMinutes: document.getElementById("minutesFilter").value
   };
 }
 
-function applyRecipeFilters(recipes) {
-  const { searchTerm, tagFilter, maxMinutes } = getRecipeFilters();
-
-  return recipes.filter((recipe) => {
-    const matchesSearch = !searchTerm || recipe.name.toLowerCase().includes(searchTerm);
-    const matchesTag =
-      !tagFilter || (recipe.tags || []).some((tag) => tag.toLowerCase().includes(tagFilter));
-    const matchesMinutes = !maxMinutes || recipe.minutes <= Number(maxMinutes);
-
-    return matchesSearch && matchesTag && matchesMinutes;
-  });
-}
-
 export async function loadRecipes() {
-  const recipes = await fetchRecipes();
-  renderRecipes(applyRecipeFilters(recipes));
+  const recipes = await searchRecipes(getRecipeFilters());
+  renderRecipes(recipes);
 }
 
 export function showRecipeEmptyState(message = "Search for recipes to see results here.") {

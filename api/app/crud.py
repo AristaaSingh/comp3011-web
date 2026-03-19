@@ -24,6 +24,25 @@ def create_recipe(db: Session, recipe: schemas.RecipeCreate):
 def get_recipes(db: Session):
     return db.query(models.Recipe).all()
 
+def search_recipes(
+    db: Session,
+    query: str | None = None,
+    tag: str | None = None,
+    max_minutes: int | None = None,
+):
+    recipe_query = db.query(models.Recipe)
+
+    if query:
+        recipe_query = recipe_query.filter(models.Recipe.name.ilike(f"%{query}%"))
+
+    if tag:
+        recipe_query = recipe_query.filter(models.Recipe.tags.ilike(f"%{tag}%"))
+
+    if max_minutes is not None:
+        recipe_query = recipe_query.filter(models.Recipe.minutes <= max_minutes)
+
+    return recipe_query.all()
+
 def get_recipe(db: Session, recipe_id: int):
     return db.query(models.Recipe).filter(models.Recipe.id == recipe_id).first()
 

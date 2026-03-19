@@ -45,6 +45,16 @@ def read_recipes(db: Session = Depends(get_db)):
     recipes = crud.get_recipes(db)
     return [recipe_to_response(recipe) for recipe in recipes]
 
+@app.get("/recipes/search", response_model=list[schemas.RecipeResponse])
+def search_recipes(
+    query: str | None = None,
+    tag: str | None = None,
+    max_minutes: int | None = None,
+    db: Session = Depends(get_db),
+):
+    recipes = crud.search_recipes(db, query=query, tag=tag, max_minutes=max_minutes)
+    return [recipe_to_response(recipe) for recipe in recipes]
+
 @app.post("/recipes", response_model=schemas.RecipeResponse, status_code=status.HTTP_201_CREATED)
 def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
     created_recipe = crud.create_recipe(db, recipe)
