@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["python313"]
+
+[phases.build]
+cmds = ["python3 build.py"]
+
+[start]
+cmd = "python3 -m http.server $PORT -d dist"
