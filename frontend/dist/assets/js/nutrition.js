@@ -237,7 +237,7 @@ export function initializeNutritionWorkspace() {
       handleNutritionSearch().catch(() => {
         renderNutritionSearchResults([]);
       });
-    }, 220);
+    }, 380);
   });
 
   input.addEventListener("keydown", (event) => {
