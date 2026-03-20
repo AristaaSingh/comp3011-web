@@ -8,7 +8,11 @@ router = APIRouter(prefix="/ingredients", tags=["ingredients"])
 
 @router.get("/search", response_model=list[schemas.NutritionSearchResult])
 async def ingredient_search(
-    query: str = Query(..., description="Ingredient search term sent to USDA", example="chicken breast")
+    query: str = Query(
+        ...,
+        description="Ingredient search term sent to USDA",
+        examples=["chicken breast"],
+    )
 ):
     data = await usda.search_foods(query=query, page_size=5)
     foods = data.get("foods", [])

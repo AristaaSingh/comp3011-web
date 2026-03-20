@@ -1,6 +1,6 @@
 # Recipe Nutrition API Docs
 
-[Overview](./index.md) | [Architecture](./architecture.md) | [API](./api.md) | [Authentication](./auth.md) | [Frontend](./frontend.md) | [Deployment](./deployment.md)
+[Overview](./index.md) | [Architecture](./architecture.md) | [API](./api.md) | [Authentication](./auth.md) | [Frontend](./frontend.md) | [Deployment](./deployment.md) | [Testing](./testing.md)
 
 This project is split into two applications plus a database:
 
@@ -37,10 +37,13 @@ This `docs/` folder is GitHub Pages-friendly. If GitHub Pages is pointed at the 
 - [Authentication](./auth.md)
 - [Frontend](./frontend.md)
 - [Deployment](./deployment.md)
+- [Testing](./testing.md)
 
 ## Testing
 
 The backend API is covered by a pytest suite in `api/tests/`.
+
+For the full testing explanation, see [Testing](./testing.md).
 
 Run it locally with:
 
@@ -50,10 +53,10 @@ venv/bin/python -m pytest api/tests
 
 The current suite covers:
 
-- authentication endpoints
+- authentication endpoints, including duplicate registration and invalid login cases
 - user profile, password change, and account deletion endpoints
 - public recipe listing and search
 - authenticated `My Recipes` retrieval
 - recipe CRUD, ownership, and not-found/error paths
-- ingredient search
-- nutrition search and gram-based nutrition estimation
+- ingredient search, including empty-result responses
+- nutrition search and gram-based nutrition estimation, including unmatched ingredients

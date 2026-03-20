@@ -41,6 +41,16 @@ def test_login_invalid_password_returns_401(client, registered_user):
     assert response.json()["detail"] == "Invalid email or password"
 
 
+def test_login_unknown_email_returns_401(client):
+    response = client.post(
+        "/auth/login",
+        json={"email": "missing@example.com", "password": "securePass123"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid email or password"
+
+
 def test_auth_me_requires_token(client):
     response = client.get("/auth/me")
     assert response.status_code == 401

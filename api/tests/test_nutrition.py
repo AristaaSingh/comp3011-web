@@ -8,6 +8,13 @@ def test_nutrition_search_returns_results(client, mock_usda):
     assert data[0]["description"] == "Rice, cooked"
 
 
+def test_nutrition_search_returns_empty_list_when_no_match(client, mock_usda):
+    response = client.get("/nutrition/search", params={"query": "mystery ingredient"})
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_nutrition_estimate_scales_by_grams(client, mock_usda):
     response = client.post(
         "/nutrition/estimate",

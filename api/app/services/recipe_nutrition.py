@@ -12,7 +12,7 @@ def parse_gram_ingredient(ingredient: str) -> schemas.IngredientEstimateItem:
     match = GRAM_INGREDIENT_PATTERN.match(str(ingredient or ""))
     if not match:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=(
                 "Recipe ingredients must use the format '<grams> g <ingredient name>', "
                 "for example '150 g chicken breast'"

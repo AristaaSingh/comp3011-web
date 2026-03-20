@@ -27,9 +27,21 @@ def read_my_recipes(
 
 @router.get("/search", response_model=list[schemas.RecipeResponse])
 def search_recipes(
-    query: str | None = Query(default=None, description="Search by recipe name", example="chicken"),
-    tag: str | None = Query(default=None, description="Filter by one tag", example="quick"),
-    max_minutes: int | None = Query(default=None, description="Return recipes at or below this cooking time", example=30),
+    query: str | None = Query(
+        default=None,
+        description="Search by recipe name",
+        examples=["chicken"],
+    ),
+    tag: str | None = Query(
+        default=None,
+        description="Filter by one tag",
+        examples=["quick"],
+    ),
+    max_minutes: int | None = Query(
+        default=None,
+        description="Return recipes at or below this cooking time",
+        examples=[30],
+    ),
     db: Session = Depends(get_db),
 ):
     recipes = crud.search_recipes(db, query=query, tag=tag, max_minutes=max_minutes)

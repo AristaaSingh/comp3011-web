@@ -87,6 +87,8 @@ Once deployed, the Railway API service exposes the interactive FastAPI documenta
 
 The backend endpoint test suite is in `api/tests/`.
 
+For a fuller explanation of the testing strategy and coverage, see [../docs/testing.md](../docs/testing.md).
+
 Run it with:
 
 ```bash
@@ -95,8 +97,8 @@ venv/bin/python -m pytest api/tests
 
 The tests cover:
 
-- auth register/login/current-user flows
+- auth register/login/current-user flows, including duplicate registration and invalid credentials
 - account profile, password-change, and account-deletion flows
-- public recipes, owned recipes, recipe CRUD, and ownership enforcement
-- ingredient search
-- nutrition search and gram-based nutrition estimation
+- public recipes, owned recipes, recipe CRUD, ownership enforcement, and missing-resource/error paths
+- ingredient search, including empty-result responses
+- nutrition search and gram-based nutrition estimation, including unmatched ingredients

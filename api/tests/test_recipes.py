@@ -96,6 +96,17 @@ def test_search_recipes_filters_by_query_tag_and_minutes(client, auth_headers, m
     assert data[0]["name"] == "Chicken Rice Bowl"
 
 
+def test_search_recipes_without_filters_returns_public_results(client, auth_headers, mock_usda):
+    client.post("/recipes", headers=auth_headers, json=sample_recipe_payload())
+
+    response = client.get("/recipes/search")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["name"] == "Chicken Rice Bowl"
+
+
 def test_update_recipe_only_allowed_for_owner(client, auth_headers, second_user_headers, mock_usda):
     create_response = client.post("/recipes", headers=auth_headers, json=sample_recipe_payload())
     recipe_id = create_response.json()["id"]

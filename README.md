@@ -13,6 +13,7 @@ This repository contains the submission code for the COMP3011 recipe and nutriti
 - [Authentication Documentation](./docs/auth.md)
 - [Frontend Documentation Notes](./docs/frontend.md)
 - [Deployment Documentation](./docs/deployment.md)
+- [Testing Documentation](./docs/testing.md)
 - [ReDoc PDF Export](./docs/assets/Recipe-Nutrition-API-ReDoc.pdf)
 
 ## Project Overview
@@ -50,6 +51,7 @@ Additional Markdown documentation is available in:
 - [docs/auth.md](./docs/auth.md) for authentication and permissions
 - [docs/frontend.md](./docs/frontend.md) for frontend structure
 - [docs/deployment.md](./docs/deployment.md) for Railway deployment notes
+- [docs/testing.md](./docs/testing.md) for the automated testing approach and coverage
 
 **For the full generated API reference with request and response examples, use FastAPI's live docs. The Markdown files in `docs/` explain how the code is organised, while Swagger UI and ReDoc provide the formal interactive API reference.**
 
@@ -104,6 +106,8 @@ window.API_BASE = "http://127.0.0.1:8000";
 
 Backend API tests are located in `api/tests/`.
 
+For a fuller explanation of the testing approach and file layout, see [docs/testing.md](./docs/testing.md).
+
 Run them from the repository root with:
 
 ```bash
@@ -112,11 +116,11 @@ venv/bin/python -m pytest api/tests
 
 The suite covers:
 
-- authentication endpoints
+- authentication endpoints, including duplicate registration and invalid login paths
 - user profile, password change, and account deletion endpoints
-- recipe CRUD, public search, user-specific `My Recipes` retrieval, and ownership rules
-- ingredient search
-- nutrition search and estimation
+- recipe CRUD, public search, user-specific `My Recipes` retrieval, ownership rules, and missing-resource/error paths
+- ingredient search, including no-match responses
+- nutrition search and gram-based estimation, including no-match ingredient handling
 
 ## Environment Variables
 

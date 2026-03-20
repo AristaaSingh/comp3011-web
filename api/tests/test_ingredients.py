@@ -7,3 +7,10 @@ def test_ingredient_search_returns_usda_results(client, mock_usda):
     assert data[0]["fdc_id"] == 1001
     assert data[0]["description"] == "Chicken breast, cooked"
     assert data[0]["food_category"] == "Poultry Products"
+
+
+def test_ingredient_search_returns_empty_list_when_no_match(client, mock_usda):
+    response = client.get("/ingredients/search", params={"query": "mystery ingredient"})
+
+    assert response.status_code == 200
+    assert response.json() == []
