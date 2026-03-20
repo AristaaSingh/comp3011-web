@@ -363,13 +363,6 @@ function setRepeatableValues(fieldType, values = []) {
 
 async function buildRecipePayload() {
   const ingredients = getRepeatableValues("ingredient");
-  const estimateIngredients = getStructuredIngredientValues();
-  let totals = {};
-
-  if (estimateIngredients.length) {
-    const estimate = await estimateRecipeNutrition(estimateIngredients);
-    totals = estimate?.totals || {};
-  }
 
   return {
     name: document.getElementById("name").value.trim(),
@@ -377,11 +370,7 @@ async function buildRecipePayload() {
     minutes: Number(document.getElementById("minutes").value),
     ingredients,
     steps: getRepeatableValues("step"),
-    tags: getRepeatableValues("tag"),
-    calories: totals.calories ?? null,
-    protein: totals.protein ?? null,
-    fat: totals.fat ?? null,
-    carbs: totals.carbs ?? null
+    tags: getRepeatableValues("tag")
   };
 }
 

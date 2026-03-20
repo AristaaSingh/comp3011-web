@@ -2,7 +2,20 @@
 
 This project serves the JSON API only. It does not serve templates or static files.
 
-## Local Run
+## Live Site
+
+The deployed application can be viewed live at:
+
+- [comp3011-frontend-production.up.railway.app](https://comp3011-frontend-production.up.railway.app)
+
+This frontend talks to the deployed API service on Railway.
+
+The live interactive API documentation is available at:
+
+- Swagger UI: [https://comp3011-api-production.up.railway.app/docs](https://comp3011-api-production.up.railway.app/docs)
+- ReDoc: [https://comp3011-api-production.up.railway.app/redoc](https://comp3011-api-production.up.railway.app/redoc)
+
+## Local Development
 
 ```bash
 cd api
@@ -15,9 +28,9 @@ The API runs on `http://127.0.0.1:8000` by default.
 
 ## Local Configuration
 
-- local database file: [recipes.db](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/api/recipes.db)
-- local environment file: [api/.env](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/api/.env)
-- local dependencies: [requirements.txt](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/api/requirements.txt)
+- local database file: [recipes.db](./recipes.db)
+- local environment file: [api/.env](./.env)
+- local dependencies: [requirements.txt](./requirements.txt)
 
 Important variables:
 
@@ -25,6 +38,16 @@ Important variables:
 - `DATABASE_URL` optional for local development
 
 If `DATABASE_URL` is not set, the API uses local SQLite. If `DATABASE_URL` is set, the API connects to the deployed database instead.
+
+## Railway Integration
+
+The API is deployed as a separate Railway service and is consumed by the separately deployed static frontend.
+
+Railway is used for:
+
+- hosting the FastAPI backend
+- injecting deployment environment variables
+- connecting the backend to Railway PostgreSQL
 
 ## Railway Settings
 
@@ -43,6 +66,11 @@ Required Railway variables:
 - `DATABASE_URL`
 
 Use the Postgres service's `DATABASE_URL`, not `DATABASE_PUBLIC_URL`.
+
+Once deployed, the Railway API service exposes the interactive FastAPI documentation at:
+
+- `https://comp3011-api-production.up.railway.app/docs`
+- `https://comp3011-api-production.up.railway.app/redoc`
 
 ## Notes
 

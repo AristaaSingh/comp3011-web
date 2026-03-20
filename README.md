@@ -1,19 +1,63 @@
 # comp3011-web
 
+This repository contains the submission code for the COMP3011 recipe and nutrition project.
+
+## Project Overview
+
+This project provides:
+
+- a FastAPI backend for recipe management, authentication, user profiles, USDA ingredient search, and nutrition estimation
+- a separate static frontend that consumes the API
+- a deployed Railway setup using a separate API service, frontend service, and PostgreSQL database
+
 This project is deployed as two separate Railway services plus a PostgreSQL database:
 
 - `api/` = FastAPI backend
 - `frontend/` = static HTML/CSS/JS frontend
 - Railway PostgreSQL = deployed database
 
+Project-specific notes for each half of the split are documented in:
+
+- [api/README.md](./api/README.md)
+- [frontend/README.md](./frontend/README.md)
+
+Multi-page documentation is available in [docs/index.md](./docs/index.md). The `docs/` folder is structured as Markdown so it can be published directly with GitHub Pages.
+
 The frontend and API are intentionally separated. The browser loads the static frontend, and the frontend makes `fetch()` requests to the API.
+
+## Documentation
+
+The root `README.md` gives the essential setup and run instructions required for the repository.
+
+Additional Markdown documentation is available in:
+
+- [docs/index.md](./docs/index.md) for the documentation overview
+- [docs/architecture.md](./docs/architecture.md) for system structure
+- [docs/api.md](./docs/api.md) for endpoint explanations
+- [docs/frontend.md](./docs/frontend.md) for frontend structure
+- [docs/deployment.md](./docs/deployment.md) for Railway deployment notes
+
+**For the full generated API reference with request and response examples, use FastAPI's live docs. The Markdown files in `docs/` explain how the code is organised, while Swagger UI and ReDoc provide the formal interactive API reference.**
+
+
+
+- Live Swagger UI: [https://comp3011-api-production.up.railway.app/docs](https://comp3011-api-production.up.railway.app/docs)
+- Live ReDoc: [https://comp3011-api-production.up.railway.app/redoc](https://comp3011-api-production.up.railway.app/redoc)
+
+>See a downloaded PDF of ReDoc [here](comp3011-web/docs/assets/Recipe-Nutrition-API-ReDoc.pdf).
+
+And in case of manual local development:
+
+- Local Swagger UI: `http://127.0.0.1:8000/docs`
+- Local ReDoc: `http://127.0.0.1:8000/redoc`
 
 ## Project Structure
 
-- [api/](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/api) contains the FastAPI app, database access, USDA integration, and Python dependencies
-- [frontend/](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/frontend) contains the static pages, JavaScript modules, and the Railway build step
-- [api/README.md](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/api/README.md) has backend-specific notes
-- [frontend/README.md](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/frontend/README.md) has frontend-specific notes
+- [api/](./api) directory contains the FastAPI app, database access, USDA integration, and Python dependencies
+- [frontend/](./frontend) directory contains the static pages, JavaScript modules, and the Railway build step
+- [api/README.md](./api/README.md) has backend-specific notes
+- [frontend/README.md](./frontend/README.md) has frontend-specific notes
+- **See [comp3011/README.md](comp3011/README.md) for complete project wide documentation.**
 
 ## Local Development
 
@@ -57,7 +101,7 @@ Important variables:
 
 Local development uses SQLite by default:
 
-- database file: [api/recipes.db](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/api/recipes.db)
+- database file: [api/recipes.db](./api/recipes.db)
 
 Railway deployment uses PostgreSQL:
 
@@ -117,7 +161,7 @@ It must include `https://`. If the scheme is missing, the browser treats it like
 
 ### What The Frontend Build Does
 
-The frontend is not served directly from the source files on Railway. During deployment, [frontend/build.py](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/frontend/build.py):
+The frontend is not served directly from the source files on Railway. During deployment, [frontend/build.py](./frontend/build.py):
 
 - creates `frontend/dist/`
 - copies the static pages and assets into `dist/`
@@ -135,8 +179,8 @@ The frontend is a static site, but Railway still needs Python because:
 
 These files exist to make Railway detect and use a Python runtime correctly:
 
-- [frontend/nixpacks.toml](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/frontend/nixpacks.toml)
-- [frontend/requirements.txt](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/frontend/requirements.txt)
+- [frontend/nixpacks.toml](./frontend/nixpacks.toml)
+- [frontend/requirements.txt](./frontend/requirements.txt)
 
 ## Deployment Flow Summary
 
@@ -148,6 +192,6 @@ These files exist to make Railway detect and use a Python runtime correctly:
 
 ## Notes
 
-- The only active backend dependency file is [api/requirements.txt](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/api/requirements.txt).
+- The only active backend dependency file is [api/requirements.txt](./api/requirements.txt).
 - Recipe search is done by the API through `GET /recipes/search`, not by frontend-only filtering.
 - If a deployed search shows raw HTML instead of JSON results, the usual cause is an incorrect `FRONTEND_API_BASE`.
