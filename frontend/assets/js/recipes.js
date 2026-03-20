@@ -9,10 +9,14 @@ import {
 import { escapeHtml } from "./utils.js";
 
 function getRecipeFilters() {
+  const searchInput = document.getElementById("searchInput");
+  const tagInput = document.getElementById("tagFilter");
+  const minutesInput = document.getElementById("minutesFilter");
+
   return {
-    query: document.getElementById("searchInput").value.trim(),
-    tag: document.getElementById("tagFilter").value.trim(),
-    maxMinutes: document.getElementById("minutesFilter").value
+    query: searchInput?.value.trim() || "",
+    tag: tagInput?.value.trim() || "",
+    maxMinutes: minutesInput?.value || ""
   };
 }
 
@@ -170,7 +174,8 @@ export async function deleteRecipe(recipeId) {
   }
 
   await deleteRecipeRequest(recipeId);
-  await loadRecipes();
+  const pageMode = window.RECIPES_PAGE_CONFIG?.mode || "all";
+  await loadRecipes(pageMode);
 }
 
 export function resetForm() {
@@ -240,7 +245,19 @@ export function resetForm() {
 }
 
 export function resetFilters() {
-  document.getElementById("searchInput").value = "";
-  document.getElementById("tagFilter").value = "";
-  document.getElementById("minutesFilter").value = "";
+  const searchInput = document.getElementById("searchInput");
+  const tagInput = document.getElementById("tagFilter");
+  const minutesInput = document.getElementById("minutesFilter");
+
+  if (searchInput) {
+    searchInput.value = "";
+  }
+
+  if (tagInput) {
+    tagInput.value = "";
+  }
+
+  if (minutesInput) {
+    minutesInput.value = "";
+  }
 }

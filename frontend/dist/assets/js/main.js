@@ -127,7 +127,6 @@ const repeatableFieldConfig = {
 };
 let repeatableFieldId = 0;
 const ingredientAutocompleteTimers = new WeakMap();
-let recipeNutritionEstimateTimer = null;
 
 function getRepeatableList(fieldType) {
   const config = repeatableFieldConfig[fieldType];
