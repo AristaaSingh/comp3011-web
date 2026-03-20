@@ -23,9 +23,6 @@ def get_user_by_email(db: Session, email: str):
 def update_user(db: Session, user: models.User, user_update: schemas.UserUpdate):
     update_data = user_update.model_dump(exclude_unset=True)
 
-    if "email" in update_data and update_data["email"] is not None:
-        update_data["email"] = update_data["email"].lower().strip()
-
     if "display_name" in update_data and update_data["display_name"] is not None:
         update_data["display_name"] = update_data["display_name"].strip() or None
 
@@ -35,6 +32,19 @@ def update_user(db: Session, user: models.User, user_update: schemas.UserUpdate)
     db.commit()
     db.refresh(user)
     return user
+
+
+def update_user_password(db: Session, user: models.User, password_hash: str):
+    user.password_hash = password_hash
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def delete_user(db: Session, user: models.User):
+    db.query(models.Recipe).filter(models.Recipe.owner_id == user.id).delete()
+    db.delete(user)
+    db.commit()
 
 
 def create_recipe(db: Session, recipe: schemas.RecipeCreate, owner_id: int | None = None):

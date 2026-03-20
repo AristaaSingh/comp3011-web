@@ -1,6 +1,6 @@
 # Recipe Nutrition API Docs
 
-[Overview](./index.md) | [Architecture](./architecture.md) | [API](./api.md) | [Frontend](./frontend.md) | [Deployment](./deployment.md)
+[Overview](./index.md) | [Architecture](./architecture.md) | [API](./api.md) | [Authentication](./auth.md) | [Frontend](./frontend.md) | [Deployment](./deployment.md)
 
 This project is split into two applications plus a database:
 
@@ -31,3 +31,19 @@ Then open `http://127.0.0.1:3000`.
 ## Documentation structure
 
 This `docs/` folder is GitHub Pages-friendly. If GitHub Pages is pointed at the `docs/` folder on the main branch, these Markdown pages can be served directly as project documentation.
+
+- [Architecture](./architecture.md)
+- [API](./api.md)
+- [Authentication](./auth.md)
+- [Frontend](./frontend.md)
+- [Deployment](./deployment.md)
+
+## Testing
+
+The backend API is covered by a pytest suite in `api/tests/`.
+
+Run it locally with:
+
+```bash
+venv/bin/python -m pytest api/tests
+```

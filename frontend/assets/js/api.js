@@ -208,3 +208,19 @@ export function updateCurrentUser(payload) {
     body: JSON.stringify(payload)
   });
 }
+
+export function changeCurrentUserPassword(payload) {
+  return request("/users/me/password", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+export function deleteCurrentUserAccount(payload) {
+  return request("/users/me", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}

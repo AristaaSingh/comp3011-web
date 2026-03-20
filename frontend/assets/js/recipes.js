@@ -54,7 +54,6 @@ export function renderRecipes(recipes) {
         <article class="recipe-card">
           <h3>${escapeHtml(recipe.name)}</h3>
           <div class="recipe-meta">
-            <div><strong>ID:</strong> ${recipe.id}</div>
             <div><strong>Minutes:</strong> ${recipe.minutes}</div>
             <div><strong>Ingredients:</strong> ${recipe.n_ingredients ?? (recipe.ingredients?.length || 0)}</div>
           </div>

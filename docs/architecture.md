@@ -1,6 +1,6 @@
 # Architecture
 
-[Overview](./index.md) | [Architecture](./architecture.md) | [API](./api.md) | [Frontend](./frontend.md) | [Deployment](./deployment.md)
+[Overview](./index.md) | [Architecture](./architecture.md) | [API](./api.md) | [Authentication](./auth.md) | [Frontend](./frontend.md) | [Deployment](./deployment.md)
 
 The application uses a split frontend/backend design.
 
@@ -13,6 +13,8 @@ The FastAPI backend is responsible for:
 - user profile management
 - USDA-backed ingredient lookup
 - USDA-backed nutrition estimation
+
+Authentication is implemented in the backend and documented in more detail on the [Authentication](./auth.md) page.
 
 ## Frontend
 
@@ -37,3 +39,5 @@ The frontend is a static site that:
 
 - **User**: account data, including `display_name`, `email`, and `password_hash`
 - **Recipe**: recipe content, calculated nutrition, and `owner_id` for edit/delete permissions
+
+Recipe ownership is enforced in the backend. See [Authentication](./auth.md) for the permission and ownership flow.

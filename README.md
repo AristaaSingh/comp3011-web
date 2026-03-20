@@ -2,6 +2,19 @@
 
 This repository contains the submission code for the COMP3011 recipe and nutrition project.
 
+## Index
+
+- [Root README](./README.md)
+- [API README](./api/README.md)
+- [Frontend README](./frontend/README.md)
+- [Documentation Overview](./docs/index.md)
+- [Architecture Documentation](./docs/architecture.md)
+- [API Documentation Notes](./docs/api.md)
+- [Authentication Documentation](./docs/auth.md)
+- [Frontend Documentation Notes](./docs/frontend.md)
+- [Deployment Documentation](./docs/deployment.md)
+- [ReDoc PDF Export](./docs/assets/Recipe-Nutrition-API-ReDoc.pdf)
+
 ## Project Overview
 
 This project provides:
@@ -12,8 +25,8 @@ This project provides:
 
 This project is deployed as two separate Railway services plus a PostgreSQL database:
 
-- `api/` = FastAPI backend
-- `frontend/` = static HTML/CSS/JS frontend
+- `api` = FastAPI backend
+- `frontend` = static HTML/CSS/JS frontend
 - Railway PostgreSQL = deployed database
 
 Project-specific notes for each half of the split are documented in:
@@ -34,6 +47,7 @@ Additional Markdown documentation is available in:
 - [docs/index.md](./docs/index.md) for the documentation overview
 - [docs/architecture.md](./docs/architecture.md) for system structure
 - [docs/api.md](./docs/api.md) for endpoint explanations
+- [docs/auth.md](./docs/auth.md) for authentication and permissions
 - [docs/frontend.md](./docs/frontend.md) for frontend structure
 - [docs/deployment.md](./docs/deployment.md) for Railway deployment notes
 
@@ -44,7 +58,7 @@ Additional Markdown documentation is available in:
 - Live Swagger UI: [https://comp3011-api-production.up.railway.app/docs](https://comp3011-api-production.up.railway.app/docs)
 - Live ReDoc: [https://comp3011-api-production.up.railway.app/redoc](https://comp3011-api-production.up.railway.app/redoc)
 
->See a downloaded PDF of ReDoc [here](comp3011-web/docs/assets/Recipe-Nutrition-API-ReDoc.pdf).
+>See a downloaded PDF of ReDoc [here](docs/assets/Recipe-Nutrition-API-ReDoc.pdf).
 
 And in case of manual local development:
 
@@ -57,7 +71,6 @@ And in case of manual local development:
 - [frontend/](./frontend) directory contains the static pages, JavaScript modules, and the Railway build step
 - [api/README.md](./api/README.md) has backend-specific notes
 - [frontend/README.md](./frontend/README.md) has frontend-specific notes
-- **See [comp3011/README.md](comp3011/README.md) for complete project wide documentation.**
 
 ## Local Development
 
@@ -86,6 +99,24 @@ For local development, the frontend uses the default API base defined in [fronte
 ```js
 window.API_BASE = "http://127.0.0.1:8000";
 ```
+
+## Testing
+
+Backend API tests are located in `api/tests/`.
+
+Run them from the repository root with:
+
+```bash
+venv/bin/python -m pytest api/tests
+```
+
+The suite covers:
+
+- authentication endpoints
+- user profile, password change, and account deletion endpoints
+- recipe CRUD, search, and ownership rules
+- ingredient search
+- nutrition search and estimation
 
 ## Environment Variables
 

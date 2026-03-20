@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.dependencies import get_db
-from app.security import get_current_user
+from app.security import get_current_user, hash_password, verify_password
 from app.serializers import user_to_response
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -20,13 +20,37 @@ def update_current_user_profile(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    if payload.email and payload.email.lower().strip() != current_user.email:
-        existing_user = crud.get_user_by_email(db, payload.email)
-        if existing_user and existing_user.id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="An account with this email already exists",
-            )
-
     user = crud.update_user(db, current_user, payload)
     return user_to_response(user)
+
+
+@router.patch("/me/password", status_code=status.HTTP_204_NO_CONTENT)
+def update_current_user_password(
+    payload: schemas.UserPasswordChange,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    crud.update_user_password(db, current_user, hash_password(payload.new_password))
+    return
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_current_user_account(
+    payload: schemas.UserDeleteConfirm,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if not verify_password(payload.password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password is incorrect",
+        )
+
+    crud.delete_user(db, current_user)
+    return

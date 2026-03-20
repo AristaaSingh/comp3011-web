@@ -24,7 +24,7 @@ Then open `http://127.0.0.1:3000`.
 
 ## Local API Target
 
-The local default API target is defined in [assets/config.js](/Users/aristaasingh/Desktop/Uni Material/Year3/Web Services and Data/comp3011-web/frontend/assets/config.js):
+The local default API target is defined in [assets/config.js](assets/config.js):
 
 ```js
 window.API_BASE = "http://127.0.0.1:8000";

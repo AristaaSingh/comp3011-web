@@ -733,8 +733,26 @@ pre {
   margin-bottom: 28px;
 }
 
-.account-form .form-grid {
-  margin-bottom: 24px;
+.account-form {
+  display: grid;
+  gap: 20px;
+}
+
+.account-subsection {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.account-field-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 .hidden {

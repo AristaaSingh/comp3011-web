@@ -1,6 +1,6 @@
 # API
 
-[Overview](./index.md) | [Architecture](./architecture.md) | [API](./api.md) | [Frontend](./frontend.md) | [Deployment](./deployment.md)
+[Overview](./index.md) | [Architecture](./architecture.md) | [API](./api.md) | [Authentication](./auth.md) | [Frontend](./frontend.md) | [Deployment](./deployment.md)
 
 This page explains what each endpoint group does and how the backend handles each request.
 
@@ -15,7 +15,7 @@ The full interactive API documentation is available from FastAPI itself:
 - Local Swagger UI: `http://127.0.0.1:8000/docs`
 - Local ReDoc: `http://127.0.0.1:8000/redoc`
 
->See a downloaded PDF of ReDoc [here](comp3011-web/docs/assets/Recipe-Nutrition-API-ReDoc.pdf).
+>See a downloaded PDF of ReDoc [here](assets/Recipe-Nutrition-API-ReDoc.pdf).
 
 These generated pages show:
 
@@ -26,6 +26,8 @@ These generated pages show:
 - query parameter details
 
 So this Markdown page is mainly for explaining how the API is organised and how the code works, while Swagger UI and ReDoc provide the formal endpoint reference with live examples and response shapes.
+
+Authentication design is documented separately on the [Authentication](./auth.md) page. This API page focuses on the endpoint surface and how each route behaves.
 
 ## Auth
 
@@ -79,7 +81,7 @@ Example request body:
 }
 ```
 
-The token returned by these endpoints is then sent by the frontend in the `Authorization: Bearer <token>` header for protected requests.
+The token returned by these endpoints is then sent in the `Authorization: Bearer <token>` header for protected requests. See [Authentication](./auth.md) for the full JWT and password-handling flow.
 
 ## Users
 
@@ -110,8 +112,7 @@ Why:
 
 How it works:
 - requires a valid JWT
-- accepts editable profile data such as `display_name` and `email`
-- checks email uniqueness if the email is changed
+- accepts editable profile data such as `display_name`
 - updates the user record in the database
 - returns the updated user profile
 
@@ -119,12 +120,65 @@ Example request body:
 
 ```json
 {
-  "display_name": "Arista Singh",
-  "email": "arista@example.com"
+  "display_name": "Arista Singh"
 }
 ```
 
+Email is intentionally not editable through this endpoint because it is used as the account identity in the database.
+
 This keeps profile management separate from login and registration.
+
+### `PATCH /users/me/password`
+
+Changes the currently authenticated user's password.
+
+Authentication required: **Yes**
+
+Why:
+- password changes should only be allowed by the signed-in account owner
+- the old password must be verified before a new one is accepted
+
+How it works:
+- requires a valid JWT
+- accepts the current password and a new password
+- verifies the current password against the stored password hash
+- stores a new password hash if the current password is correct
+- returns `204 No Content` on success
+
+Example request body:
+
+```json
+{
+  "current_password": "securePass123",
+  "new_password": "newSecurePass456"
+}
+```
+
+### `DELETE /users/me`
+
+Deletes the currently authenticated user account.
+
+Authentication required: **Yes**
+
+Why:
+- account deletion is a destructive action and must only be performed by the signed-in user
+
+How it works:
+- requires a valid JWT
+- requires the user's password in the request body as confirmation
+- deletes the current user from the database
+- also deletes any recipes owned by that user
+- returns `204 No Content` on success
+
+Example request body:
+
+```json
+{
+  "password": "securePass123"
+}
+```
+
+This keeps account deletion API-driven rather than relying on frontend-only state clearing.
 
 ## Recipes
 

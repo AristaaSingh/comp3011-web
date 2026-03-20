@@ -49,13 +49,37 @@ class UserResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     display_name: Optional[str] = Field(None, max_length=255)
-    email: Optional[str] = Field(None, min_length=3, max_length=255)
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "display_name": "Arista Singh",
-                "email": "arista@example.com",
+            }
+        }
+    )
+
+
+class UserPasswordChange(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=255)
+    new_password: str = Field(..., min_length=8, max_length=255)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "current_password": "securePass123",
+                "new_password": "newSecurePass456",
+            }
+        }
+    )
+
+
+class UserDeleteConfirm(BaseModel):
+    password: str = Field(..., min_length=1, max_length=255)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "password": "securePass123",
             }
         }
     )

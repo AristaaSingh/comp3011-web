@@ -24,7 +24,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-The API runs on `http://127.0.0.1:8000` by default.
+The API runs on `http://127.0.0.1:8000` by default. See [here](../frontend/README.md) to run the frontend provided in this repo along with the api.
 
 ## Local Configuration
 
@@ -77,3 +77,17 @@ Once deployed, the Railway API service exposes the interactive FastAPI documenta
 - CORS is enabled so the separate static frontend can call the API.
 - Recipe search is exposed through `GET /recipes/search`.
 - PostgreSQL on Railway is accessed through SQLAlchemy with the `psycopg` driver.
+- Account management includes:
+  - `PATCH /users/me` for display name updates
+  - `PATCH /users/me/password` for password changes
+  - `DELETE /users/me` for password-confirmed account deletion
+
+## Testing
+
+The backend endpoint test suite is in `api/tests/`.
+
+Run it with:
+
+```bash
+venv/bin/python -m pytest api/tests
+```
