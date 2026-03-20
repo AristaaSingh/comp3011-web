@@ -96,6 +96,10 @@ export function fetchRecipes() {
   return request("/recipes");
 }
 
+export function fetchMyRecipes() {
+  return request("/recipes/mine");
+}
+
 export function searchRecipes(filters = {}) {
   const params = new URLSearchParams();
 

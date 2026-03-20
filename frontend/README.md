@@ -13,6 +13,14 @@ The live API documentation that powers this frontend is available at:
 - Swagger UI: [https://comp3011-api-production.up.railway.app/docs](https://comp3011-api-production.up.railway.app/docs)
 - ReDoc: [https://comp3011-api-production.up.railway.app/redoc](https://comp3011-api-production.up.railway.app/redoc)
 
+The frontend includes:
+
+- a public recipe browsing flow
+- a signed-in-only `My Recipes` page backed by the API
+- recipe creation and editing
+- account management
+- USDA-backed nutrition tools
+
 ## Local Development
 
 ```bash

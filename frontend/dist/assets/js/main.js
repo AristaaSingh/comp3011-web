@@ -1,6 +1,8 @@
 import {
+  changeCurrentUserPassword,
   clearAuthState,
   createRecipe,
+  deleteCurrentUserAccount,
   estimateNutrition as estimateRecipeNutrition,
   fetchCurrentUser,
   fetchRecipeById,
@@ -23,7 +25,7 @@ import {
 } from "./recipes.js";
 import {
   handleNutritionEstimate,
-  handleNutritionSearch,
+  initializeNutritionWorkspace,
   renderNutritionEstimateResults
 } from "./nutrition.js";
 import {
@@ -37,14 +39,21 @@ function updateAuthNavigation() {
   }
 
   authLink.textContent = isAuthenticated() ? "Account" : "Sign In";
+
+  for (const link of document.querySelectorAll("[data-my-recipes-link]")) {
+    link.classList.toggle("hidden", !isAuthenticated());
+  }
+
+  for (const link of document.querySelectorAll("[data-my-recipes-button]")) {
+    link.classList.toggle("hidden", !isAuthenticated());
+  }
 }
 
 function setLockedRecipeFormState(message) {
   const form = document.getElementById("recipeForm");
-  const output = document.getElementById("formOutput");
   const notice = document.getElementById("recipeFormNotice");
 
-  if (!form || !output) {
+  if (!form) {
     return;
   }
 
@@ -59,8 +68,24 @@ function setLockedRecipeFormState(message) {
     notice.classList.remove("hidden", "success");
     notice.classList.add("error");
   }
+}
 
-  output.textContent = "";
+function setRecipeFormNotice(message = "", isError = false) {
+  const notice = document.getElementById("recipeFormNotice");
+  if (!notice) {
+    return;
+  }
+
+  if (!message) {
+    notice.textContent = "";
+    notice.classList.add("hidden");
+    notice.classList.remove("error", "success");
+    return;
+  }
+
+  notice.textContent = message;
+  notice.classList.remove("hidden", "error", "success");
+  notice.classList.add(isError ? "error" : "success");
 }
 
 function setAuthTab(activeTab) {
@@ -492,13 +517,13 @@ async function handleRecipeSubmit(event) {
   const recipeId = document.getElementById("recipeId").value;
 
   try {
-    document.getElementById("formOutput").textContent = "Estimating nutrition from USDA ingredient data...";
+    setRecipeFormNotice("Saving recipe with USDA-backed nutrition estimates...");
     const payload = await buildRecipePayload();
     const data = recipeId
       ? await updateRecipe(recipeId, payload)
       : await createRecipe(payload);
 
-    document.getElementById("formOutput").textContent = JSON.stringify(data, null, 2);
+    setRecipeFormNotice("");
     resetForm();
     closeRecipeFormPanel();
     if (window.location.pathname.endsWith("recipe-form.html")) {
@@ -510,7 +535,7 @@ async function handleRecipeSubmit(event) {
       await loadRecipes();
     }
   } catch (error) {
-    showError("formOutput", error);
+    setRecipeFormNotice(error instanceof Error ? error.message : String(error), true);
   }
 }
 
@@ -548,11 +573,13 @@ async function refreshAuthPanel() {
   const authSummary = document.getElementById("authUserSummary");
   const accountDisplayName = document.getElementById("accountDisplayName");
   const accountEmail = document.getElementById("accountEmail");
+  const passwordForm = document.getElementById("passwordForm");
+  const deleteAccountForm = document.getElementById("deleteAccountForm");
   const session = getAuthSession();
 
   updateAuthNavigation();
 
-  if (!authCard || !authPanel || !authSummary || !accountDisplayName || !accountEmail) {
+  if (!authCard || !authPanel || !authSummary || !accountDisplayName || !accountEmail || !passwordForm || !deleteAccountForm) {
     return;
   }
 
@@ -562,6 +589,8 @@ async function refreshAuthPanel() {
     authSummary.textContent = "";
     accountDisplayName.value = "";
     accountEmail.value = "";
+    passwordForm.reset();
+    deleteAccountForm.reset();
     return;
   }
 
@@ -572,6 +601,8 @@ async function refreshAuthPanel() {
     authSummary.textContent = `Signed in as ${user.display_name || user.email}`;
     accountDisplayName.value = user.display_name || "";
     accountEmail.value = user.email || "";
+    passwordForm.reset();
+    deleteAccountForm.reset();
     storeAuthSession({
       access_token: session.accessToken,
       user
@@ -623,8 +654,7 @@ async function handleAccountSubmit(event) {
 
   try {
     const user = await updateCurrentUser({
-      display_name: document.getElementById("accountDisplayName").value.trim() || null,
-      email: document.getElementById("accountEmail").value.trim()
+      display_name: document.getElementById("accountDisplayName").value.trim() || null
     });
     const session = getAuthSession();
     if (session?.accessToken) {
@@ -635,6 +665,46 @@ async function handleAccountSubmit(event) {
     }
     await refreshAuthPanel();
     renderAuthStatus("Account updated successfully.");
+  } catch (error) {
+    renderAuthStatus(error instanceof Error ? error.message : String(error), true);
+  }
+}
+
+async function handlePasswordSubmit(event) {
+  event.preventDefault();
+
+  try {
+    await changeCurrentUserPassword({
+      current_password: document.getElementById("currentPassword").value,
+      new_password: document.getElementById("newPassword").value
+    });
+    document.getElementById("passwordForm").reset();
+    renderAuthStatus("Password updated successfully.");
+  } catch (error) {
+    renderAuthStatus(error instanceof Error ? error.message : String(error), true);
+  }
+}
+
+async function handleDeleteAccount(event) {
+  event.preventDefault();
+
+  const password = document.getElementById("deleteAccountPassword").value;
+  if (!password) {
+    renderAuthStatus("Please enter your password to delete the account.", true);
+    return;
+  }
+
+  if (!window.confirm("Delete your account and all recipes you created? This cannot be undone.")) {
+    return;
+  }
+
+  try {
+    await deleteCurrentUserAccount({ password });
+    clearAuthState();
+    updateAuthNavigation();
+    document.getElementById("deleteAccountForm").reset();
+    await refreshAuthPanel();
+    renderAuthStatus("Account deleted successfully.");
   } catch (error) {
     renderAuthStatus(error instanceof Error ? error.message : String(error), true);
   }
@@ -687,7 +757,63 @@ async function initializeRecipeDetailPage() {
           ${(recipe.steps || []).map((step) => `<li>${escapeHtml(step)}</li>`).join("")}
         </ol>
       </section>
+      <section class="subpanel">
+        <h3>Nutrition breakdown</h3>
+        <div id="recipeDetailNutrition"></div>
+      </section>
     `;
+
+    const detailNutritionContainer = document.getElementById("recipeDetailNutrition");
+    if (detailNutritionContainer) {
+      const parsedIngredients = (recipe.ingredients || []).map((ingredient) => {
+        const text = String(ingredient || "").trim();
+        const match = text.match(/^(\d+(?:\.\d+)?)\s*g\s+(.+)$/i);
+
+        return match
+          ? {
+              grams: Number(match[1]),
+              name: match[2].trim()
+            }
+          : null;
+      });
+
+      if (parsedIngredients.length && parsedIngredients.every(Boolean)) {
+        const estimate = await estimateRecipeNutrition(parsedIngredients);
+        const originalId = detailNutritionContainer.id;
+        detailNutritionContainer.id = "nutritionEstimateResults";
+        renderNutritionEstimateResults(
+          estimate,
+          "No nutrition data available for this recipe."
+        );
+        detailNutritionContainer.id = originalId;
+      } else {
+        detailNutritionContainer.innerHTML = `
+          <div class="nutrition-table-shell">
+            <table class="nutrition-summary-table">
+              <thead>
+                <tr>
+                  <th>Calories</th>
+                  <th>Protein (g)</th>
+                  <th>Fat (g)</th>
+                  <th>Carbs (g)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>${recipe.calories != null ? Number(recipe.calories).toFixed(1) : "N/A"}</td>
+                  <td>${recipe.protein != null ? Number(recipe.protein).toFixed(1) : "N/A"}</td>
+                  <td>${recipe.fat != null ? Number(recipe.fat).toFixed(1) : "N/A"}</td>
+                  <td>${recipe.carbs != null ? Number(recipe.carbs).toFixed(1) : "N/A"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="empty-state">
+            This recipe was saved without gram-based ingredient quantities, so an exact per-ingredient USDA breakdown is not available.
+          </div>
+        `;
+      }
+    }
   } catch (error) {
     title.textContent = "Recipe not found";
     showError("recipeDetailContent", error);
@@ -718,6 +844,11 @@ function initializeRecipeSection() {
     return;
   }
 
+  if (pageMode === "mine" && !isAuthenticated()) {
+    showRecipeEmptyState("Sign in to view the recipes you created.");
+    return;
+  }
+
   const recipeForm = document.getElementById("recipeForm");
   if (recipeForm) {
     recipeForm.addEventListener("submit", handleRecipeSubmit);
@@ -733,7 +864,7 @@ function initializeRecipeSection() {
 
   if (searchButton) {
     searchButton.addEventListener("click", () => {
-      loadRecipes().catch((error) => showError("recipesGrid", error));
+      loadRecipes(pageMode).catch((error) => showError("recipesGrid", error));
     });
   }
 
@@ -742,7 +873,7 @@ function initializeRecipeSection() {
       resetFilters();
 
       if (pageMode === "all") {
-        loadRecipes().catch((error) => showError("recipesGrid", error));
+        loadRecipes(pageMode).catch((error) => showError("recipesGrid", error));
       } else {
         showRecipeEmptyState("");
       }
@@ -759,13 +890,6 @@ function initializeRecipeSection() {
     cancelButton.addEventListener("click", () => {
       resetForm();
       closeRecipeFormPanel();
-    });
-  }
-
-  const refreshButton = document.getElementById("refreshRecipesButton");
-  if (refreshButton) {
-    refreshButton.addEventListener("click", () => {
-      loadRecipes().catch((error) => showError("recipesGrid", error));
     });
   }
 
@@ -917,7 +1041,7 @@ function initializeRecipeFormPage() {
       .then(() => {
         scheduleRecipeNutritionPreview();
       })
-      .catch((error) => showError("formOutput", error));
+      .catch((error) => setRecipeFormNotice(error instanceof Error ? error.message : String(error), true));
   }
 
   renderNutritionEstimateResults(null, "Add ingredients and gram amounts to preview the nutrition estimate.");
@@ -952,6 +1076,16 @@ function initializeAuthPage() {
     accountForm.addEventListener("submit", handleAccountSubmit);
   }
 
+  const passwordForm = document.getElementById("passwordForm");
+  if (passwordForm) {
+    passwordForm.addEventListener("submit", handlePasswordSubmit);
+  }
+
+  const deleteAccountForm = document.getElementById("deleteAccountForm");
+  if (deleteAccountForm) {
+    deleteAccountForm.addEventListener("submit", handleDeleteAccount);
+  }
+
   setAuthTab("login");
   refreshAuthPanel().catch((error) => {
     renderAuthStatus(error instanceof Error ? error.message : String(error), true);
@@ -959,27 +1093,10 @@ function initializeAuthPage() {
 }
 
 function initializeNutritionSection() {
-  if (!document.getElementById("nutritionSearchButton") || !document.getElementById("nutritionEstimateButton")) {
+  if (!document.getElementById("nutritionEstimateButton")) {
     return;
   }
-
-  document.getElementById("nutritionSearchButton").addEventListener("click", async () => {
-    try {
-      await handleNutritionSearch();
-    } catch (error) {
-      showError("nutritionSearchResults", error);
-    }
-  });
-
-  document.getElementById("nutritionEstimateButton").addEventListener("click", async () => {
-    try {
-      await handleNutritionEstimate();
-    } catch (error) {
-      showError("nutritionEstimateResults", error);
-    }
-  });
-
-  renderNutritionEstimateResults(null);
+  initializeNutritionWorkspace();
 }
 
 function initializeApp() {
@@ -998,8 +1115,16 @@ function initializeApp() {
   if (document.getElementById("recipesGrid")) {
     applyRecipeFiltersFromUrl();
 
-    if ((window.RECIPES_PAGE_CONFIG?.mode || "all") === "all") {
-      loadRecipes().catch((error) => showError("recipesGrid", error));
+    const pageMode = window.RECIPES_PAGE_CONFIG?.mode || "all";
+
+    if (pageMode === "all") {
+      loadRecipes(pageMode).catch((error) => showError("recipesGrid", error));
+    } else if (pageMode === "mine") {
+      if (isAuthenticated()) {
+        loadRecipes(pageMode).catch((error) => showError("recipesGrid", error));
+      } else {
+        showRecipeEmptyState("Sign in to view the recipes you created.");
+      }
     } else {
       showRecipeEmptyState("");
     }

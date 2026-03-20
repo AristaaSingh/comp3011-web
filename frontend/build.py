@@ -17,7 +17,7 @@ def main() -> None:
     shutil.copytree(ASSETS, DIST / "assets")
     (DIST / "assets" / "config.js").write_text(f'window.API_BASE = "{API_BASE}";\n')
 
-    for page in ("index.html", "results.html", "recipe-form.html", "recipe-detail.html", "nutrition.html", "auth.html"):
+    for page in ("index.html", "results.html", "my-recipes.html", "recipe-form.html", "recipe-detail.html", "nutrition.html", "auth.html"):
         shutil.copy2(ROOT / page, DIST / page)
 
 

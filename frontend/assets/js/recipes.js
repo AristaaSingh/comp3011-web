@@ -1,6 +1,7 @@
 import {
   deleteRecipe as deleteRecipeRequest,
   fetchRecipeById,
+  fetchMyRecipes,
   getAuthSession,
   isAuthenticated,
   searchRecipes
@@ -15,8 +16,11 @@ function getRecipeFilters() {
   };
 }
 
-export async function loadRecipes() {
-  const recipes = await searchRecipes(getRecipeFilters());
+export async function loadRecipes(mode = "all") {
+  const recipes =
+    mode === "mine"
+      ? await fetchMyRecipes()
+      : await searchRecipes(getRecipeFilters());
   renderRecipes(recipes);
 }
 

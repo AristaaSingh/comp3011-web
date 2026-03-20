@@ -25,7 +25,7 @@ import {
 } from "./recipes.js";
 import {
   handleNutritionEstimate,
-  handleNutritionSearch,
+  initializeNutritionWorkspace,
   renderNutritionEstimateResults
 } from "./nutrition.js";
 import {
@@ -39,6 +39,14 @@ function updateAuthNavigation() {
   }
 
   authLink.textContent = isAuthenticated() ? "Account" : "Sign In";
+
+  for (const link of document.querySelectorAll("[data-my-recipes-link]")) {
+    link.classList.toggle("hidden", !isAuthenticated());
+  }
+
+  for (const link of document.querySelectorAll("[data-my-recipes-button]")) {
+    link.classList.toggle("hidden", !isAuthenticated());
+  }
 }
 
 function setLockedRecipeFormState(message) {
@@ -836,6 +844,11 @@ function initializeRecipeSection() {
     return;
   }
 
+  if (pageMode === "mine" && !isAuthenticated()) {
+    showRecipeEmptyState("Sign in to view the recipes you created.");
+    return;
+  }
+
   const recipeForm = document.getElementById("recipeForm");
   if (recipeForm) {
     recipeForm.addEventListener("submit", handleRecipeSubmit);
@@ -851,7 +864,7 @@ function initializeRecipeSection() {
 
   if (searchButton) {
     searchButton.addEventListener("click", () => {
-      loadRecipes().catch((error) => showError("recipesGrid", error));
+      loadRecipes(pageMode).catch((error) => showError("recipesGrid", error));
     });
   }
 
@@ -860,7 +873,7 @@ function initializeRecipeSection() {
       resetFilters();
 
       if (pageMode === "all") {
-        loadRecipes().catch((error) => showError("recipesGrid", error));
+        loadRecipes(pageMode).catch((error) => showError("recipesGrid", error));
       } else {
         showRecipeEmptyState("");
       }
@@ -1080,27 +1093,10 @@ function initializeAuthPage() {
 }
 
 function initializeNutritionSection() {
-  if (!document.getElementById("nutritionSearchButton") || !document.getElementById("nutritionEstimateButton")) {
+  if (!document.getElementById("nutritionEstimateButton")) {
     return;
   }
-
-  document.getElementById("nutritionSearchButton").addEventListener("click", async () => {
-    try {
-      await handleNutritionSearch();
-    } catch (error) {
-      showError("nutritionSearchResults", error);
-    }
-  });
-
-  document.getElementById("nutritionEstimateButton").addEventListener("click", async () => {
-    try {
-      await handleNutritionEstimate();
-    } catch (error) {
-      showError("nutritionEstimateResults", error);
-    }
-  });
-
-  renderNutritionEstimateResults(null);
+  initializeNutritionWorkspace();
 }
 
 function initializeApp() {
@@ -1119,8 +1115,16 @@ function initializeApp() {
   if (document.getElementById("recipesGrid")) {
     applyRecipeFiltersFromUrl();
 
-    if ((window.RECIPES_PAGE_CONFIG?.mode || "all") === "all") {
-      loadRecipes().catch((error) => showError("recipesGrid", error));
+    const pageMode = window.RECIPES_PAGE_CONFIG?.mode || "all";
+
+    if (pageMode === "all") {
+      loadRecipes(pageMode).catch((error) => showError("recipesGrid", error));
+    } else if (pageMode === "mine") {
+      if (isAuthenticated()) {
+        loadRecipes(pageMode).catch((error) => showError("recipesGrid", error));
+      } else {
+        showRecipeEmptyState("Sign in to view the recipes you created.");
+      }
     } else {
       showRecipeEmptyState("");
     }

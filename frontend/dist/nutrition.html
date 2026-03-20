@@ -16,6 +16,7 @@
 
       <nav class="main-nav" aria-label="Primary">
         <a href="./index.html" class="nav-link">Recipes</a>
+        <a href="./my-recipes.html" class="nav-link hidden" data-my-recipes-link>My Recipes</a>
         <a href="./recipe-form.html" class="nav-link">Add Recipe</a>
         <a href="./nutrition.html" class="nav-link active">Nutrition</a>
         <a href="./auth.html" class="nav-link" data-auth-nav-link>Sign In</a>
@@ -31,38 +32,50 @@
       </section>
 
       <section class="panel">
-        <div class="nutrition-panels">
-          <section class="subpanel">
+        <div class="nutrition-workspace">
+          <section class="subpanel nutrition-composer">
             <div class="form-header">
-              <h3>USDA Search</h3>
+              <h3>Build an estimate</h3>
             </div>
 
-            <div class="search-filter-grid">
-              <input type="text" id="nutritionSearchInput" placeholder="Search foods, e.g. chicken breast" />
-              <div class="button-row">
-                <button type="button" id="nutritionSearchButton">Search Foods</button>
+            <p class="form-step-note">Search USDA foods, choose the right suggestion, add the gram amount, and build up the ingredient list one item at a time.</p>
+
+            <div class="nutrition-composer-grid">
+              <div class="repeatable-field-shell">
+                <label class="form-label" for="nutritionSearchInput">Ingredient</label>
+                <input type="text" id="nutritionSearchInput" placeholder="Search foods, e.g. chicken breast" autocomplete="off" />
+                <div id="nutritionSearchResults" class="ingredient-suggestions hidden" role="listbox"></div>
+              </div>
+
+              <div>
+                <label class="form-label" for="nutritionGramsInput">Grams</label>
+                <input type="number" id="nutritionGramsInput" placeholder="e.g. 150" min="0" step="0.1" />
               </div>
             </div>
 
-            <div id="nutritionSearchResults" class="recipes-grid"></div>
-          </section>
-
-          <section class="subpanel">
-            <div class="form-header">
-              <h3>Nutrition Estimate</h3>
+            <div class="button-row nutrition-composer-actions">
+              <button type="button" id="nutritionAddButton">Add ingredient</button>
+              <button type="button" class="secondary" id="nutritionClearButton">Clear list</button>
             </div>
 
-            <p class="form-step-note">Enter each ingredient as grams plus name, for example `150 g chicken breast`.</p>
-
-            <textarea
-              id="nutritionEstimateIngredients"
-              placeholder="e.g. 150 g chicken breast"
-              rows="8"
-            ></textarea>
+            <div class="subpanel nutrition-selected-shell">
+              <div class="form-header">
+                <h3>Selected ingredients</h3>
+              </div>
+              <div id="nutritionSelectedIngredients" class="nutrition-selected-list"></div>
+            </div>
 
             <div class="button-row">
               <button type="button" id="nutritionEstimateButton">Estimate Nutrition</button>
             </div>
+          </section>
+
+          <section class="subpanel nutrition-results-shell">
+            <div class="form-header">
+              <h3>Nutrition breakdown</h3>
+            </div>
+
+            <p class="form-step-note">The estimate is returned by your API from USDA-backed ingredient data and the gram amounts you provide.</p>
 
             <div id="nutritionEstimateResults" class="nutrition-estimate-results"></div>
           </section>

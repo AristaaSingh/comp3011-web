@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recipe Details | Recipe Nutrition API</title>
+  <title>My Recipes | Recipe Nutrition API</title>
   <link rel="stylesheet" href="./assets/style.css" />
 </head>
 <body>
@@ -15,8 +15,8 @@
       </div>
 
       <nav class="main-nav" aria-label="Primary">
-        <a href="./index.html" class="nav-link active">Recipes</a>
-        <a href="./my-recipes.html" class="nav-link hidden" data-my-recipes-link>My Recipes</a>
+        <a href="./index.html" class="nav-link">Recipes</a>
+        <a href="./my-recipes.html" class="nav-link active hidden" data-my-recipes-link>My Recipes</a>
         <a href="./recipe-form.html" class="nav-link">Add Recipe</a>
         <a href="./nutrition.html" class="nav-link">Nutrition</a>
         <a href="./auth.html" class="nav-link" data-auth-nav-link>Sign In</a>
@@ -26,23 +26,20 @@
     <main class="container">
       <section class="hero-panel">
         <div class="hero-copy">
-          <h2 id="recipeDetailTitle">Loading recipe...</h2>
-          <p class="hero-text">View the recipe summary, ingredients, and method in one place.</p>
-        </div>
-        <div class="button-row">
-          <a id="editRecipeLink" href="./recipe-form.html" class="button-link">Edit</a>
-          <a href="./results.html" class="button-link secondary-link">Back</a>
+          <h2>My Recipes</h2>
+          <p class="hero-text">View the recipes you created and manage only your own entries.</p>
         </div>
       </section>
 
       <section class="panel">
-        <div id="recipeDetailContent">
-          <p class="note">Loading recipe details...</p>
-        </div>
+        <div id="recipesGrid" class="recipes-grid"></div>
       </section>
     </main>
   </div>
 
+  <script>
+    window.RECIPES_PAGE_CONFIG = { mode: "mine" };
+  </script>
   <script src="./assets/config.js"></script>
   <script type="module" src="./assets/js/main.js"></script>
 </body>

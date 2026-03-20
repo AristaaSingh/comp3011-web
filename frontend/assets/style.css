@@ -408,6 +408,11 @@ body {
   box-shadow: var(--shadow);
 }
 
+.nutrition-composer .ingredient-suggestions {
+  right: auto;
+  width: min(560px, calc(100vw - 80px));
+}
+
 .ingredient-suggestion-item {
   width: 100%;
   padding: 12px 14px;
@@ -467,6 +472,64 @@ body {
 
 .nutrition-panels {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.nutrition-workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.nutrition-composer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 12px;
+  align-items: end;
+}
+
+.nutrition-composer-actions {
+  margin-top: 16px;
+}
+
+.nutrition-selected-shell {
+  margin-top: 22px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.nutrition-composer > .button-row:last-child {
+  margin-top: 20px;
+}
+
+.nutrition-selected-list {
+  display: grid;
+  gap: 10px;
+}
+
+.nutrition-selected-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.nutrition-selected-title {
+  font-weight: 600;
+  color: var(--heading);
+}
+
+.nutrition-selected-meta {
+  margin-top: 4px;
+  font-size: 0.92rem;
+  color: var(--text-soft);
+}
+
+.nutrition-remove-button {
+  min-width: 96px;
 }
 
 .auth-card {
@@ -858,7 +921,9 @@ li + li {
 
   .recipe-title-row,
   .tag-composer,
-  .ingredient-item-fields {
+  .ingredient-item-fields,
+  .nutrition-workspace,
+  .nutrition-composer-grid {
     grid-template-columns: 1fr;
   }
 

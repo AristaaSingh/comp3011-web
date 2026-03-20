@@ -1,5 +1,8 @@
-import { estimateNutrition, searchNutritionFoods } from "./api.js";
+import { estimateNutrition, searchIngredientOptions } from "./api.js";
 import { escapeHtml } from "./utils.js";
+
+let selectedIngredients = [];
+let searchTimerId = null;
 
 function formatNumber(value) {
   if (value == null) {
@@ -9,79 +12,139 @@ function formatNumber(value) {
   return Number(value).toFixed(1);
 }
 
-function parseLineSeparated(id) {
-  const element = document.getElementById(id);
-  return (element?.value || "")
-    .split("\n")
-    .map((value) => value.trim())
-    .filter(Boolean);
+function getNutritionElements() {
+  return {
+    input: document.getElementById("nutritionSearchInput"),
+    gramsInput: document.getElementById("nutritionGramsInput"),
+    suggestions: document.getElementById("nutritionSearchResults"),
+    selectedList: document.getElementById("nutritionSelectedIngredients"),
+    estimateResults: document.getElementById("nutritionEstimateResults"),
+  };
 }
 
-export async function handleNutritionSearch() {
-  const input = document.getElementById("nutritionSearchInput");
-  const query = input.value.trim();
-
-  if (!query) {
-    renderNutritionSearchResults([]);
+function renderSelectedIngredients() {
+  const { selectedList } = getNutritionElements();
+  if (!selectedList) {
     return;
   }
 
-  const results = await searchNutritionFoods(query);
-  renderNutritionSearchResults(results);
-}
-
-export function renderNutritionSearchResults(results) {
-  const container = document.getElementById("nutritionSearchResults");
-
-  if (!results.length) {
-    container.innerHTML = `<div class="empty-state">No nutrition matches found.</div>`;
+  if (!selectedIngredients.length) {
+    selectedList.innerHTML = `<div class="empty-state">Add ingredients to build a nutrition estimate.</div>`;
     return;
   }
 
-  container.innerHTML = results
+  selectedList.innerHTML = selectedIngredients
     .map(
-      (result) => `
-        <article class="nutrition-result-card">
-          <h3>${escapeHtml(result.description)}</h3>
-          <div class="recipe-meta">
-            <div><strong>FDC ID:</strong> ${result.fdc_id}</div>
-            <div><strong>Type:</strong> ${escapeHtml(result.data_type || "Unknown")}</div>
+      (item, index) => `
+        <div class="nutrition-selected-item">
+          <div>
+            <div class="nutrition-selected-title">${escapeHtml(item.name)}</div>
+            <div class="nutrition-selected-meta">${formatNumber(item.grams)} g</div>
           </div>
-        </article>
+          <button type="button" class="secondary nutrition-remove-button" data-nutrition-remove="${index}">Remove</button>
+        </div>
       `
     )
     .join("");
 }
 
-export async function handleNutritionEstimate() {
-  const ingredients = parseLineSeparated("nutritionEstimateIngredients")
-    .map((line) => {
-      const match = line.match(/^(\d+(?:\.\d+)?)\s*g\s+(.+)$/i);
-      if (!match) {
-        return null;
-      }
+function clearNutritionComposer() {
+  const { input, gramsInput, suggestions } = getNutritionElements();
+  if (input) {
+    input.value = "";
+  }
+  if (gramsInput) {
+    gramsInput.value = "";
+  }
+  if (suggestions) {
+    suggestions.innerHTML = "";
+    suggestions.classList.add("hidden");
+  }
+}
 
-      return {
-        grams: Number(match[1]),
-        name: match[2].trim()
-      };
-    })
-    .filter(Boolean);
-
-  if (!ingredients.length) {
-    renderNutritionEstimateResults(null);
+function addSelectedIngredient() {
+  const { input, gramsInput } = getNutritionElements();
+  if (!input || !gramsInput) {
     return;
   }
 
-  const estimate = await estimateNutrition(ingredients);
+  const name = input.value.trim();
+  const grams = Number(gramsInput.value);
+
+  if (!name || !grams || grams <= 0) {
+    throw new Error("Enter a USDA ingredient and a gram quantity before adding it.");
+  }
+
+  selectedIngredients.push({ name, grams });
+  renderSelectedIngredients();
+  clearNutritionComposer();
+}
+
+export async function handleNutritionSearch() {
+  const { input } = getNutritionElements();
+  if (!input) {
+    return;
+  }
+
+  const query = input.value.trim();
+  if (!query) {
+    renderNutritionSearchResults([]);
+    return;
+  }
+
+  const results = await searchIngredientOptions(query);
+  renderNutritionSearchResults(results);
+}
+
+export function renderNutritionSearchResults(results) {
+  const { suggestions } = getNutritionElements();
+  if (!suggestions) {
+    return;
+  }
+
+  if (!results.length) {
+    suggestions.innerHTML = "";
+    suggestions.classList.add("hidden");
+    return;
+  }
+
+  suggestions.innerHTML = results
+    .map((result) => {
+      const meta = [result.data_type, result.food_category || result.brand_owner, result.fdc_id ? `FDC ${result.fdc_id}` : ""]
+        .filter(Boolean)
+        .join(" • ");
+
+      return `
+        <button
+          type="button"
+          class="ingredient-suggestion-item"
+          data-suggestion-value="${escapeHtml(result.description)}"
+        >
+          <span class="ingredient-suggestion-title">${escapeHtml(result.description)}</span>
+          ${meta ? `<span class="ingredient-suggestion-meta">${escapeHtml(meta)}</span>` : ""}
+        </button>
+      `;
+    })
+    .join("");
+
+  suggestions.classList.remove("hidden");
+}
+
+export async function handleNutritionEstimate() {
+  if (!selectedIngredients.length) {
+    renderNutritionEstimateResults(null, "Add at least one ingredient before estimating nutrition.");
+    return;
+  }
+
+  const estimate = await estimateNutrition(selectedIngredients);
   renderNutritionEstimateResults(estimate);
 }
 
 export function renderNutritionEstimateResults(
   estimate,
-  emptyMessage = "Enter one ingredient per line to estimate nutrition."
+  emptyMessage = "Add ingredients with gram amounts to estimate nutrition."
 ) {
-  const container = document.getElementById("nutritionEstimateResults");
+  const { estimateResults: container } = getNutritionElements();
 
   if (!container) {
     return;
@@ -149,4 +212,95 @@ export function renderNutritionEstimateResults(
       </table>
     </div>
   `;
+}
+
+export function initializeNutritionWorkspace() {
+  const { input, suggestions, selectedList } = getNutritionElements();
+  const addButton = document.getElementById("nutritionAddButton");
+  const clearButton = document.getElementById("nutritionClearButton");
+  const estimateButton = document.getElementById("nutritionEstimateButton");
+
+  if (!input || !suggestions || !selectedList || !addButton || !clearButton || !estimateButton) {
+    return;
+  }
+
+  selectedIngredients = [];
+  renderSelectedIngredients();
+  renderNutritionEstimateResults(null);
+
+  input.addEventListener("input", () => {
+    if (searchTimerId) {
+      window.clearTimeout(searchTimerId);
+    }
+
+    searchTimerId = window.setTimeout(() => {
+      handleNutritionSearch().catch(() => {
+        renderNutritionSearchResults([]);
+      });
+    }, 220);
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    try {
+      addSelectedIngredient();
+    } catch (error) {
+      renderNutritionEstimateResults(null, error instanceof Error ? error.message : String(error));
+    }
+  });
+
+  input.addEventListener("focusout", () => {
+    window.setTimeout(() => {
+      suggestions.classList.add("hidden");
+    }, 120);
+  });
+
+  suggestions.addEventListener("click", (event) => {
+    const suggestionButton = event.target.closest("[data-suggestion-value]");
+    if (!suggestionButton) {
+      return;
+    }
+
+    input.value = suggestionButton.dataset.suggestionValue || "";
+    suggestions.innerHTML = "";
+    suggestions.classList.add("hidden");
+  });
+
+  selectedList.addEventListener("click", (event) => {
+    const removeButton = event.target.closest("[data-nutrition-remove]");
+    if (!removeButton) {
+      return;
+    }
+
+    const index = Number(removeButton.dataset.nutritionRemove);
+    selectedIngredients.splice(index, 1);
+    renderSelectedIngredients();
+  });
+
+  addButton.addEventListener("click", () => {
+    try {
+      addSelectedIngredient();
+    } catch (error) {
+      renderNutritionEstimateResults(null, error instanceof Error ? error.message : String(error));
+    }
+  });
+
+  clearButton.addEventListener("click", () => {
+    selectedIngredients = [];
+    renderSelectedIngredients();
+    clearNutritionComposer();
+    renderNutritionEstimateResults(null);
+  });
+
+  estimateButton.addEventListener("click", async () => {
+    try {
+      await handleNutritionEstimate();
+    } catch (error) {
+      renderNutritionEstimateResults(null, error instanceof Error ? error.message : String(error));
+    }
+  });
 }

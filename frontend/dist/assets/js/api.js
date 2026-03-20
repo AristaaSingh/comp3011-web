@@ -96,6 +96,10 @@ export function fetchRecipes() {
   return request("/recipes");
 }
 
+export function fetchMyRecipes() {
+  return request("/recipes/mine");
+}
+
 export function searchRecipes(filters = {}) {
   const params = new URLSearchParams();
 
@@ -204,6 +208,22 @@ export function fetchCurrentUser() {
 export function updateCurrentUser(payload) {
   return request("/users/me", {
     method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+export function changeCurrentUserPassword(payload) {
+  return request("/users/me/password", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+export function deleteCurrentUserAccount(payload) {
+  return request("/users/me", {
+    method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
