@@ -527,7 +527,8 @@ async function handleRecipeSubmit(event) {
     resetForm();
     closeRecipeFormPanel();
     if (window.location.pathname.endsWith("recipe-form.html")) {
-      window.location.href = `./recipe-detail.html?id=${data.id}`;
+      const redirectParam = recipeId ? "updatedId" : "createdId";
+      window.location.href = `./my-recipes.html?${redirectParam}=${data.id}`;
       return;
     }
 
@@ -565,6 +566,24 @@ function renderAuthStatus(message, isError = false) {
   authStatus.textContent = message;
   authStatus.classList.remove("hidden", "error", "success");
   authStatus.classList.add(isError ? "error" : "success");
+}
+
+function renderRecipePageStatus(message, isError = false) {
+  const status = document.getElementById("recipePageStatus");
+  if (!status) {
+    return;
+  }
+
+  if (!message) {
+    status.textContent = "";
+    status.classList.add("hidden");
+    status.classList.remove("error", "success");
+    return;
+  }
+
+  status.textContent = message;
+  status.classList.remove("hidden", "error", "success");
+  status.classList.add(isError ? "error" : "success");
 }
 
 async function refreshAuthPanel() {
@@ -825,6 +844,7 @@ function initializeRecipeSection() {
   const hasRecipeGrid = Boolean(document.getElementById("recipesGrid"));
   const searchButton = document.getElementById("searchRecipesButton");
   const resetButton = document.getElementById("resetFiltersButton");
+  const searchParams = new URLSearchParams(window.location.search);
 
   if (pageMode === "landing") {
     if (searchButton) {
@@ -847,6 +867,16 @@ function initializeRecipeSection() {
   if (pageMode === "mine" && !isAuthenticated()) {
     showRecipeEmptyState("Sign in to view the recipes you created.");
     return;
+  }
+
+  if (pageMode === "mine") {
+    if (searchParams.has("createdId")) {
+      renderRecipePageStatus("Recipe added successfully.");
+    } else if (searchParams.has("updatedId")) {
+      renderRecipePageStatus("Recipe updated successfully.");
+    } else {
+      renderRecipePageStatus("");
+    }
   }
 
   const recipeForm = document.getElementById("recipeForm");
