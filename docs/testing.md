@@ -141,6 +141,29 @@ These tests check:
 
 ## How to run the tests
 
+It is strongly recommended to use a Python virtual environment so the test dependencies stay isolated from the rest of your machine.
+
+You do not strictly have to use a `venv`, but the documentation and commands in this project assume one exists at the repository root.
+
+### 1. Create and activate a virtual environment
+
+From the repository root:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 2. Install the backend requirements
+
+```bash
+pip install -r api/requirements.txt
+```
+
+This installs both the runtime backend dependencies and the test dependency `pytest`.
+
+### 3. Run the tests
+
 From the repository root:
 
 ```bash

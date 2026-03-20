@@ -14,6 +14,13 @@ This project is split into two applications plus a database:
 
 Run the backend and frontend separately during local development.
 
+It is recommended to create and activate a Python virtual environment from the repository root first:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
 ```bash
 cd api
 source ../venv/bin/activate
@@ -44,6 +51,14 @@ This `docs/` folder is GitHub Pages-friendly. If GitHub Pages is pointed at the 
 The backend API is covered by a pytest suite in `api/tests/`.
 
 For the full testing explanation, see [Testing](./testing.md).
+
+Recommended setup:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r api/requirements.txt
+```
 
 Run it locally with:
 

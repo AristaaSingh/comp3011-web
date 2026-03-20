@@ -17,6 +17,13 @@ The live interactive API documentation is available at:
 
 ## Local Development
 
+It is recommended to create and activate a Python virtual environment from the repository root first:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
 ```bash
 cd api
 source ../venv/bin/activate
@@ -88,6 +95,14 @@ Once deployed, the Railway API service exposes the interactive FastAPI documenta
 The backend endpoint test suite is in `api/tests/`.
 
 For a fuller explanation of the testing strategy and coverage, see [../docs/testing.md](../docs/testing.md).
+
+Recommended setup from the repository root:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r api/requirements.txt
+```
 
 Run it with:
 

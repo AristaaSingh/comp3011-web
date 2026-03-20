@@ -76,6 +76,13 @@ And in case of manual local development:
 
 ## Local Development
 
+It is recommended to create a Python virtual environment at the repository root before running the backend or the tests:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
 Start the API in one terminal:
 
 ```bash
@@ -107,6 +114,14 @@ window.API_BASE = "http://127.0.0.1:8000";
 Backend API tests are located in `api/tests/`.
 
 For a fuller explanation of the testing approach and file layout, see [docs/testing.md](./docs/testing.md).
+
+Recommended setup from the repository root:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r api/requirements.txt
+```
 
 Run them from the repository root with:
 
