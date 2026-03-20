@@ -6,6 +6,7 @@
 
 - `index.html`: landing and search page
 - `results.html`: filtered recipe results
+- `my-recipes.html`: signed-in user's own recipes, loaded from the API
 - `recipe-form.html`: create or edit recipe
 - `recipe-detail.html`: recipe detail page
 - `nutrition.html`: USDA search and nutrition estimate tools
@@ -26,5 +27,7 @@ The frontend changes its UI based on authentication state:
 - signed out users see the Sign In / Register forms
 - signed in users see the account editing form and logout button
 - edit/delete buttons for recipes only appear when the signed-in user owns that recipe
+- the `My Recipes` navigation item and landing-page button only appear when the user is signed in
+- the `My Recipes` page uses the API endpoint `GET /recipes/mine` rather than filtering public recipe data in the browser
 
 > The frontend does not implement recipe ownership by itself. It only reflects ownership information returned by the API, and the API still enforces permissions on update/delete routes.

@@ -71,6 +71,10 @@ def get_recipes(db: Session):
     return db.query(models.Recipe).all()
 
 
+def get_user_recipes(db: Session, user_id: int):
+    return db.query(models.Recipe).filter(models.Recipe.owner_id == user_id).all()
+
+
 def count_recipes(db: Session):
     return db.query(models.Recipe).count()
 

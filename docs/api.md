@@ -197,6 +197,24 @@ How it works:
 - converts stored JSON text fields like ingredients, steps, and tags back into API response arrays
 - returns the full recipe list
 
+### `GET /recipes/mine`
+
+Returns only the recipes created by the currently authenticated user.
+
+Authentication required: **Yes**
+
+Why:
+- this route is user-specific and depends on recipe ownership
+- it allows clients to request a current-user collection directly from the API instead of downloading all recipes and filtering in the browser
+
+How it works:
+- requires a valid JWT
+- resolves the current user from the token
+- filters the recipes table by `owner_id`
+- returns only recipes created by that signed-in user
+
+This endpoint powers the frontend `My Recipes` page, but it is still a general API service and can be used by Swagger UI, Postman, or any other client.
+
 ### `GET /recipes/search`
 
 Returns recipes filtered by optional search terms.
@@ -239,8 +257,9 @@ Why:
 
 How it works:
 - requires a valid JWT
-- accepts recipe content such as name, ingredients, steps, tags, and calculated nutrition values
+- accepts recipe content such as name, ingredients, steps, and tags
 - stores the signed-in user's id as `owner_id`
+- calculates nutrition totals server-side from the gram-based ingredients using USDA-backed API logic
 - saves the recipe in the database
 - returns the created recipe
 

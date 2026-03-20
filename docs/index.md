@@ -47,3 +47,13 @@ Run it locally with:
 ```bash
 venv/bin/python -m pytest api/tests
 ```
+
+The current suite covers:
+
+- authentication endpoints
+- user profile, password change, and account deletion endpoints
+- public recipe listing and search
+- authenticated `My Recipes` retrieval
+- recipe CRUD, ownership, and not-found/error paths
+- ingredient search
+- nutrition search and gram-based nutrition estimation

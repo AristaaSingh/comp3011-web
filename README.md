@@ -114,7 +114,7 @@ The suite covers:
 
 - authentication endpoints
 - user profile, password change, and account deletion endpoints
-- recipe CRUD, search, and ownership rules
+- recipe CRUD, public search, user-specific `My Recipes` retrieval, and ownership rules
 - ingredient search
 - nutrition search and estimation
 

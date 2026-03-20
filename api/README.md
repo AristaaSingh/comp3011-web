@@ -76,6 +76,7 @@ Once deployed, the Railway API service exposes the interactive FastAPI documenta
 
 - CORS is enabled so the separate static frontend can call the API.
 - Recipe search is exposed through `GET /recipes/search`.
+- User-owned recipe retrieval is exposed through `GET /recipes/mine`.
 - PostgreSQL on Railway is accessed through SQLAlchemy with the `psycopg` driver.
 - Account management includes:
   - `PATCH /users/me` for display name updates
@@ -91,3 +92,11 @@ Run it with:
 ```bash
 venv/bin/python -m pytest api/tests
 ```
+
+The tests cover:
+
+- auth register/login/current-user flows
+- account profile, password-change, and account-deletion flows
+- public recipes, owned recipes, recipe CRUD, and ownership enforcement
+- ingredient search
+- nutrition search and gram-based nutrition estimation

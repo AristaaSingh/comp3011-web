@@ -1,3 +1,26 @@
+import pytest
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "payload"),
+    [
+        ("get", "/users/me", None),
+        ("patch", "/users/me", {"display_name": "Arista"}),
+        ("patch", "/users/me/password", {"current_password": "securePass123", "new_password": "newSecurePass456"}),
+        ("delete", "/users/me", {"password": "securePass123"}),
+    ],
+)
+def test_user_account_routes_require_authentication(client, method, path, payload):
+    request_kwargs = {}
+    if payload is not None:
+        request_kwargs["json"] = payload
+
+    response = client.request(method.upper(), path, **request_kwargs)
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Authentication required"
+
+
 def test_get_users_me_returns_profile(client, auth_headers):
     response = client.get("/users/me", headers=auth_headers)
 

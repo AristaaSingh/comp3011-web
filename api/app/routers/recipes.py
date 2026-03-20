@@ -16,6 +16,15 @@ def read_recipes(db: Session = Depends(get_db)):
     return [recipe_to_response(recipe) for recipe in recipes]
 
 
+@router.get("/mine", response_model=list[schemas.RecipeResponse])
+def read_my_recipes(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    recipes = crud.get_user_recipes(db, current_user.id)
+    return [recipe_to_response(recipe) for recipe in recipes]
+
+
 @router.get("/search", response_model=list[schemas.RecipeResponse])
 def search_recipes(
     query: str | None = Query(default=None, description="Search by recipe name", example="chicken"),
